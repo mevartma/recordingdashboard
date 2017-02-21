@@ -27,8 +27,6 @@ var recordings []RecordingDetails
 var s3recordings []S3RecordingFileDetails
 var setting ServerConfig
 
-/*var office = string("Germany")
-var postURL = string("")*/
 var count int64
 
 type RecordingDetails struct {
