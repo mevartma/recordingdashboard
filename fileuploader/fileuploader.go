@@ -104,7 +104,7 @@ func findRecord(recoredDate, recordName, officeName string) string {
 func Upload2S3() error {
 	bucket := aws.String("betamediarecording")
 	s3Config := &aws.Config{
-		Credentials:      credentials.NewStaticCredentials("AKIAJBORGMMA5NY2GRFQ", "8YcCRVf6h+DG2qCVLFM6y1PUn8VfJhr8R1oelrBV", ""),
+		Credentials:      credentials.NewStaticCredentials("awsid", "awskey", ""),
 		Region:           aws.String("eu-central-1"),
 		DisableSSL:       aws.Bool(true),
 		S3ForcePathStyle: aws.Bool(true),
