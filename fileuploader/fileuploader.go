@@ -26,7 +26,6 @@ const (
 var recordings []RecordingDetails
 var s3recordings []S3RecordingFileDetails
 var setting ServerConfig
-
 var count int64
 
 type RecordingDetails struct {
