@@ -26,7 +26,6 @@ const (
 var recordings []RecordingDetails
 var s3recordings []S3RecordingFileDetails
 var setting ServerConfig
-var count int64
 
 type RecordingDetails struct {
 	CallDate      string `json:"calldate"`
@@ -69,7 +68,7 @@ func init() {
 	}
 }
 
-func GetAllRecodring(date string) (*[]RecordingDetails, error) {
+func GetAllRecording(date string) (*[]RecordingDetails, error) {
 	var results []RecordingDetails
 	db, err := sql.Open(server, dbURL)
 	if err != nil {
@@ -98,7 +97,7 @@ func GetAllRecodring(date string) (*[]RecordingDetails, error) {
 func updateRecords() error {
 	now := time.Now()
 	newDate := fmt.Sprintf("%s", now.Format("2006-01-02"))
-	rss, err := GetAllRecodring(newDate)
+	rss, err := GetAllRecording(newDate)
 	recordings = nil
 	for _, rs := range *rss {
 		recordings = append(recordings, rs)
@@ -136,32 +135,27 @@ func Upload2S3() error {
 	}
 
 	for _, r := range s3recordings {
-		count++
-		if count == 30 {
-			return nil
-		} else {
-			file, err := os.Open(r.DiskFilePath)
-			if err != nil {
-				log.Println(err)
-				return err
-			}
-			defer file.Close()
-
-			uploader := s3manager.NewUploader(newSession)
-			_, err = uploader.Upload(&s3manager.UploadInput{
-				Bucket: bucket,
-				Key:    aws.String(r.RecordingFile),
-				Body:   file,
-			})
-			if err != nil {
-				log.Println(err)
-				return err
-			}
-			fileURL := fmt.Sprintf("https://s3.eu-central-1.amazonaws.com/betamediarecording/%s/%s", r.Office, r.RecordingFile)
-			r.S3FileURL = fileURL
-			fmt.Println(r.S3FileURL)
-			time.Sleep(4 * time.Second)
+		file, err := os.Open(r.DiskFilePath)
+		if err != nil {
+			log.Println(err)
+			return err
 		}
+		defer file.Close()
+
+		uploader := s3manager.NewUploader(newSession)
+		_, err = uploader.Upload(&s3manager.UploadInput{
+			Bucket: bucket,
+			Key:    aws.String(r.RecordingFile),
+			Body:   file,
+		})
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+		fileURL := fmt.Sprintf("https://s3.eu-central-1.amazonaws.com/betamediarecording/%s/%s", r.Office, r.RecordingFile)
+		r.S3FileURL = fileURL
+		fmt.Println(r.S3FileURL)
+		time.Sleep(4 * time.Second)
 	}
 
 	return nil
@@ -193,7 +187,7 @@ func UploadToDatabase() (err error) {
 func main() {
 	err := updateRecords()
 	if err != nil {
-		log.Fatal("Faild to get data from database",err)
+		log.Fatal("Faild to get data from database", err)
 		os.Exit(1)
 	}
 
@@ -208,7 +202,7 @@ func main() {
 
 	err = Upload2S3()
 	if err != nil {
-		log.Fatal("Failed to upload files to s3",err)
+		log.Fatal("Failed to upload files to s3", err)
 		os.Exit(1)
 	}
 
