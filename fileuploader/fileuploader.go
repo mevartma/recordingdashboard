@@ -161,24 +161,24 @@ func Upload2S3() error {
 	return nil
 }
 
-func UploadToDatabase() (err error) {
+func UploadToDatabase() error {
 	client := http.Client{}
 	for _, rec := range s3recordings {
 		js, err := json.Marshal(rec)
 		if err != nil {
 			log.Fatal(err)
-			return
+			return err
 		}
 		req, err := http.NewRequest("POST", setting.ServerURL, bytes.NewReader(js))
 		if err != nil {
 			log.Fatal(err)
-			return
+			return err
 		}
 		req.Header.Set("Content-Type", "application/json")
 		_, err = client.Do(req)
 		if err != nil {
 			log.Fatal(err)
-			return
+			return err
 		}
 	}
 	return nil
@@ -194,8 +194,8 @@ func main() {
 	s3recordings = nil
 	for _, record := range recordings {
 		if record.RecordingFile != "" {
-			diskfilepath := findRecord(record.CallDate, record.RecordingFile, setting.Office)
-			var s3r = S3RecordingFileDetails{record, diskfilepath, "", setting.Office}
+			DiskFilePath := findRecord(record.CallDate, record.RecordingFile, setting.Office)
+			var s3r = S3RecordingFileDetails{record, DiskFilePath, "", setting.Office}
 			s3recordings = append(s3recordings, s3r)
 		}
 	}
