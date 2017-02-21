@@ -196,9 +196,10 @@ func UploadToDatabase() (err error) {
 func main() {
 	err := updateRecords()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Faild to get data from database",err)
 		os.Exit(1)
 	}
+
 	s3recordings = nil
 	for _, record := range recordings {
 		if record.RecordingFile != "" {
@@ -210,7 +211,13 @@ func main() {
 
 	err = Upload2S3()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Failed to upload files to s3",err)
+		os.Exit(1)
+	}
+
+	err = UploadToDatabase()
+	if err != nil {
+		log.Fatal("Failed to upload to database. ", err)
 		os.Exit(1)
 	}
 }
