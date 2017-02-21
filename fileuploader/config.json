@@ -1,0 +1,6 @@
+{
+  "office": "Germany",
+  "server_url": "http://localhost/api/v1/recorfing",
+  "awsid": "example_id",
+  "aws_key": "example_key"
+}

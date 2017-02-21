@@ -10,6 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	_ "github.com/go-sql-driver/mysql"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -24,8 +25,10 @@ const (
 
 var recordings []RecordingDetails
 var s3recordings []S3RecordingFileDetails
-var office = string("Germany")
-var postURL = string("")
+var setting ServerConfig
+
+/*var office = string("Germany")
+var postURL = string("")*/
 var count int64
 
 type RecordingDetails struct {
@@ -49,6 +52,26 @@ type S3RecordingFileDetails struct {
 	Office       string `json:"office"`
 }
 
+type ServerConfig struct {
+	Office    string `json:"office"`
+	ServerURL string `json:"server_url"`
+	AWSID     string `json:"awsid"`
+	AWDKey    string `json:"awd_key"`
+}
+
+func init() {
+	file, err := ioutil.ReadFile("config.json")
+	if err != nil {
+		log.Fatal("Config File Missing. ", err)
+		os.Exit(1)
+	}
+	err = json.Unmarshal(file, &setting)
+	if err != nil {
+		log.Fatal("Config Parse Error: ", err)
+		os.Exit(1)
+	}
+}
+
 func GetAllRecodring(date string) (*[]RecordingDetails, error) {
 	var results []RecordingDetails
 	db, err := sql.Open(server, dbURL)
@@ -58,7 +81,7 @@ func GetAllRecodring(date string) (*[]RecordingDetails, error) {
 	defer db.Close()
 
 	query := "SELECT calldate,clid,src,dst,duration,billsec,disposition,accountcode,uniqueid,did,recordingfile FROM cdr WHERE calldate like '?%'"
-	rows, err := db.Query(query,date)
+	rows, err := db.Query(query, date)
 	if err != nil {
 		return &results, err
 	}
@@ -77,7 +100,7 @@ func GetAllRecodring(date string) (*[]RecordingDetails, error) {
 
 func updateRecords() error {
 	now := time.Now()
-	newDate := fmt.Sprintf("%s",now.Format("2006-01-02"))
+	newDate := fmt.Sprintf("%s", now.Format("2006-01-02"))
 	rss, err := GetAllRecodring(newDate)
 	recordings = nil
 	for _, rs := range *rss {
@@ -88,9 +111,9 @@ func updateRecords() error {
 
 func findRecord(recoredDate, recordName, officeName string) string {
 	var basePath string
-	if officeName == "Germany" {
+	if strings.ToLower(officeName) == "germany" {
 		basePath = "/var/spool/asterisk/monitor"
-	} else if officeName == "Kiev" {
+	} else if strings.ToLower(officeName) == "kiev" {
 		basePath = "/home/recording"
 	}
 
@@ -104,7 +127,7 @@ func findRecord(recoredDate, recordName, officeName string) string {
 func Upload2S3() error {
 	bucket := aws.String("betamediarecording")
 	s3Config := &aws.Config{
-		Credentials:      credentials.NewStaticCredentials("awsid", "awskey", ""),
+		Credentials:      credentials.NewStaticCredentials(setting.AWSID, setting.AWDKey, ""),
 		Region:           aws.String("eu-central-1"),
 		DisableSSL:       aws.Bool(true),
 		S3ForcePathStyle: aws.Bool(true),
@@ -155,7 +178,7 @@ func UploadToDatabase() (err error) {
 			log.Fatal(err)
 			return
 		}
-		req, err := http.NewRequest("POST", postURL, bytes.NewReader(js))
+		req, err := http.NewRequest("POST", setting.ServerURL, bytes.NewReader(js))
 		if err != nil {
 			log.Fatal(err)
 			return
@@ -179,8 +202,8 @@ func main() {
 	s3recordings = nil
 	for _, record := range recordings {
 		if record.RecordingFile != "" {
-			diskfilepath := findRecord(record.CallDate, record.RecordingFile, office)
-			var s3r= S3RecordingFileDetails{record, diskfilepath, "", office}
+			diskfilepath := findRecord(record.CallDate, record.RecordingFile, setting.Office)
+			var s3r = S3RecordingFileDetails{record, diskfilepath, "", setting.Office}
 			s3recordings = append(s3recordings, s3r)
 		}
 	}
