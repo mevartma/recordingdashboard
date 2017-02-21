@@ -1,0 +1,79 @@
+<component name="libraryTable">
+  <library name="GOPATH &lt;RecordingDashboard&gt;">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/../BI-Reports" />
+      <root url="file://$PROJECT_DIR$/../Crawl" />
+      <root url="file://$PROJECT_DIR$/../honnef.co" />
+      <root url="file://$PROJECT_DIR$/../godownload" />
+      <root url="file://$PROJECT_DIR$/../.metadata" />
+      <root url="file://$PROJECT_DIR$/../github.com" />
+      <root url="file://$PROJECT_DIR$/../golang.org" />
+      <root url="file://$PROJECT_DIR$/../crawlgo" />
+      <root url="file://$PROJECT_DIR$/../AsterriskReports" />
+      <root url="file://$PROJECT_DIR$/../gopkg.in" />
+      <root url="file://$PROJECT_DIR$/../proxy" />
+      <root url="file://$PROJECT_DIR$/../google.golang.org" />
+      <root url="file://$PROJECT_DIR$/../9fans.net" />
+      <root url="file://$PROJECT_DIR$/../widgetService" />
+      <root url="file://$PROJECT_DIR$/../sourcegraph.com" />
+      <root url="file://$PROJECT_DIR$/../launchpad.net" />
+      <root url="file://$PROJECT_DIR$/../Dialer" />
+      <root url="file://$PROJECT_DIR$/../GmailManager" />
+      <root url="file://$PROJECT_DIR$/../nagios" />
+      <root url="file://$PROJECT_DIR$/../gocrawl" />
+      <root url="file://$PROJECT_DIR$/../RemoteSystemsTempFiles" />
+      <root url="file://$PROJECT_DIR$/../gorename" />
+      <root url="file://$PROJECT_DIR$/../phonereport" />
+      <root url="file://$PROJECT_DIR$/../netflow" />
+      <root url="file://$PROJECT_DIR$/../autotesting" />
+      <root url="file://$PROJECT_DIR$/../phoneBook" />
+      <root url="file://$PROJECT_DIR$/../bapi" />
+      <root url="file://$PROJECT_DIR$/../barkia" />
+      <root url="file://$PROJECT_DIR$/../godownload2" />
+      <root url="file://$PROJECT_DIR$/../rsc.io" />
+      <root url="file://$PROJECT_DIR$/../ActiveDirectoryManager" />
+      <root url="file://$PROJECT_DIR$/../goregex" />
+      <root url="file://$PROJECT_DIR$/../QABarkia" />
+      <root url="file://$PROJECT_DIR$/../redirect" />
+    </CLASSES>
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/../BI-Reports" />
+      <root url="file://$PROJECT_DIR$/../Crawl" />
+      <root url="file://$PROJECT_DIR$/../honnef.co" />
+      <root url="file://$PROJECT_DIR$/../godownload" />
+      <root url="file://$PROJECT_DIR$/../.metadata" />
+      <root url="file://$PROJECT_DIR$/../github.com" />
+      <root url="file://$PROJECT_DIR$/../golang.org" />
+      <root url="file://$PROJECT_DIR$/../crawlgo" />
+      <root url="file://$PROJECT_DIR$/../AsterriskReports" />
+      <root url="file://$PROJECT_DIR$/../gopkg.in" />
+      <root url="file://$PROJECT_DIR$/../proxy" />
+      <root url="file://$PROJECT_DIR$/../google.golang.org" />
+      <root url="file://$PROJECT_DIR$/../9fans.net" />
+      <root url="file://$PROJECT_DIR$/../widgetService" />
+      <root url="file://$PROJECT_DIR$/../sourcegraph.com" />
+      <root url="file://$PROJECT_DIR$/../launchpad.net" />
+      <root url="file://$PROJECT_DIR$/../Dialer" />
+      <root url="file://$PROJECT_DIR$/../GmailManager" />
+      <root url="file://$PROJECT_DIR$/../nagios" />
+      <root url="file://$PROJECT_DIR$/../gocrawl" />
+      <root url="file://$PROJECT_DIR$/../RemoteSystemsTempFiles" />
+      <root url="file://$PROJECT_DIR$/../gorename" />
+      <root url="file://$PROJECT_DIR$/../phonereport" />
+      <root url="file://$PROJECT_DIR$/../netflow" />
+      <root url="file://$PROJECT_DIR$/../autotesting" />
+      <root url="file://$PROJECT_DIR$/../phoneBook" />
+      <root url="file://$PROJECT_DIR$/../bapi" />
+      <root url="file://$PROJECT_DIR$/../barkia" />
+      <root url="file://$PROJECT_DIR$/../godownload2" />
+      <root url="file://$PROJECT_DIR$/../rsc.io" />
+      <root url="file://$PROJECT_DIR$/../ActiveDirectoryManager" />
+      <root url="file://$PROJECT_DIR$/../goregex" />
+      <root url="file://$PROJECT_DIR$/../QABarkia" />
+      <root url="file://$PROJECT_DIR$/../redirect" />
+    </SOURCES>
+    <excluded>
+      <root url="file://$PROJECT_DIR$" />
+    </excluded>
+  </library>
+</component>
