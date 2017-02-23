@@ -38,21 +38,21 @@ type RecordingDetails struct {
 	AccountCode   string `json:"accountcode"`
 	UniqueId      string `json:"uniqueid"`
 	DID           string `json:"did"`
-	RecordingFile string `json:"recordingfile"`
+	Recording_File string `json:"recordingfile"`
 }
 
 type S3RecordingFileDetails struct {
 	RecordingDetails
-	DiskFilePath string `json:"disk_file_path"`
-	S3FileURL    string `json:"s_3_file_url"`
+	Disk_File_Path string `json:"disk_file_path"`
+	S3_File_URL    string `json:"s_3_file_url"`
 	Office       string `json:"office"`
 }
 
 type ServerConfig struct {
 	Office    string `json:"office"`
-	ServerURL string `json:"server_url"`
-	AWSID     string `json:"awsid"`
-	AWDKey    string `json:"awd_key"`
+	Server_URL string `json:"server_url"`
+	AWS_ID     string `json:"aws_id"`
+	AWD_Key    string `json:"awd_key"`
 }
 
 func init() {
@@ -84,7 +84,7 @@ func GetAllRecording(date string) (*[]RecordingDetails, error) {
 
 	for rows.Next() {
 		var r RecordingDetails
-		err = rows.Scan(&r.CallDate, &r.ClId, &r.SRC, &r.DST, &r.Duration, &r.BillSec, &r.Disposition, &r.AccountCode, &r.UniqueId, &r.DID, &r.RecordingFile)
+		err = rows.Scan(&r.CallDate, &r.ClId, &r.SRC, &r.DST, &r.Duration, &r.BillSec, &r.Disposition, &r.AccountCode, &r.UniqueId, &r.DID, &r.Recording_File)
 		if err != nil {
 			return &results, err
 		}
@@ -106,7 +106,7 @@ func updateRecords() error {
 	return err
 }
 
-func findRecord(recoredDate, recordName, officeName string) string {
+func findRecord(recordDate, recordName, officeName string) string {
 	var basePath string
 	if strings.ToLower(officeName) == "germany" {
 		basePath = "/var/spool/asterisk/monitor"
@@ -114,7 +114,7 @@ func findRecord(recoredDate, recordName, officeName string) string {
 		basePath = "/home/recording"
 	}
 
-	s := strings.Split(recoredDate, " ")
+	s := strings.Split(recordDate, " ")
 	date := strings.Split(s[0], "-")
 	g := fmt.Sprintf("%s/%s/%s/%s/%s", basePath, date[0], date[1], date[2], recordName)
 
@@ -124,7 +124,7 @@ func findRecord(recoredDate, recordName, officeName string) string {
 func Upload2S3() error {
 	bucket := aws.String("betamediarecording")
 	s3Config := &aws.Config{
-		Credentials:      credentials.NewStaticCredentials(setting.AWSID, setting.AWDKey, ""),
+		Credentials:      credentials.NewStaticCredentials(setting.AWS_ID, setting.AWD_Key, ""),
 		Region:           aws.String("eu-central-1"),
 		DisableSSL:       aws.Bool(true),
 		S3ForcePathStyle: aws.Bool(true),
@@ -137,7 +137,7 @@ func Upload2S3() error {
 
 	for _, r := range s3recordings {
 		func () {
-			file, err := os.Open(r.DiskFilePath)
+			file, err := os.Open(r.Disk_File_Path)
 			if err != nil {
 				log.Println(err)
 				return
@@ -147,16 +147,16 @@ func Upload2S3() error {
 			uploader := s3manager.NewUploader(newSession)
 			_, err = uploader.Upload(&s3manager.UploadInput{
 				Bucket: bucket,
-				Key:    aws.String(r.RecordingFile),
+				Key:    aws.String(r.Recording_File),
 				Body:   file,
 			})
 			if err != nil {
 				log.Println(err)
 				return
 			}
-			fileURL := fmt.Sprintf("https://s3.eu-central-1.amazonaws.com/betamediarecording/%s/%s", r.Office, r.RecordingFile)
-			r.S3FileURL = fileURL
-			fmt.Println(r.S3FileURL)
+			fileURL := fmt.Sprintf("https://s3.eu-central-1.amazonaws.com/betamediarecording/%s/%s", r.Office, r.Recording_File)
+			r.S3_File_URL = fileURL
+			fmt.Println(r.S3_File_URL)
 			time.Sleep(4 * time.Second)
 		}()
 	}
@@ -172,7 +172,7 @@ func UploadToDatabase() error {
 			log.Fatal(err)
 			return err
 		}
-		req, err := http.NewRequest("POST", setting.ServerURL, bytes.NewReader(js))
+		req, err := http.NewRequest("POST", setting.Server_URL, bytes.NewReader(js))
 		if err != nil {
 			log.Fatal(err)
 			return err
@@ -196,8 +196,8 @@ func main() {
 
 	s3recordings = nil
 	for _, record := range recordings {
-		if record.RecordingFile != "" {
-			DiskFilePath := findRecord(record.CallDate, record.RecordingFile, setting.Office)
+		if record.Recording_File != "" {
+			DiskFilePath := findRecord(record.CallDate, record.Recording_File, setting.Office)
 			var s3r = S3RecordingFileDetails{record, DiskFilePath, "", setting.Office}
 			s3recordings = append(s3recordings, s3r)
 		}
