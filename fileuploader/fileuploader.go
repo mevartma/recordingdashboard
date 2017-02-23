@@ -76,7 +76,7 @@ func GetAllRecording(date string) (*[]RecordingDetails, error) {
 	}
 	defer db.Close()
 
-	query := "SELECT calldate,clid,src,dst,duration,billsec,disposition,accountcode,uniqueid,did,recordingfile FROM cdr WHERE calldate like '?%'"
+	query := "SELECT calldate,clid,src,dst,duration,billsec,disposition,accountcode,uniqueid,did,recordingfile FROM cdr WHERE calldate like ?"
 	rows, err := db.Query(query, date)
 	if err != nil {
 		return &results, err
@@ -96,7 +96,8 @@ func GetAllRecording(date string) (*[]RecordingDetails, error) {
 
 func updateRecords() error {
 	now := time.Now()
-	newDate := fmt.Sprintf("%s", now.Format("2006-01-02"))
+	newDate := now.Format("2006-01-02")
+	newDate += "%"
 	rss, err := GetAllRecording(newDate)
 	recordings = nil
 	for _, rs := range *rss {
@@ -135,27 +136,29 @@ func Upload2S3() error {
 	}
 
 	for _, r := range s3recordings {
-		file, err := os.Open(r.DiskFilePath)
-		if err != nil {
-			log.Println(err)
-			return err
-		}
-		defer file.Close()
+		func () {
+			file, err := os.Open(r.DiskFilePath)
+			if err != nil {
+				log.Println(err)
+				return
+			}
+			defer file.Close()
 
-		uploader := s3manager.NewUploader(newSession)
-		_, err = uploader.Upload(&s3manager.UploadInput{
-			Bucket: bucket,
-			Key:    aws.String(r.RecordingFile),
-			Body:   file,
-		})
-		if err != nil {
-			log.Println(err)
-			return err
-		}
-		fileURL := fmt.Sprintf("https://s3.eu-central-1.amazonaws.com/betamediarecording/%s/%s", r.Office, r.RecordingFile)
-		r.S3FileURL = fileURL
-		fmt.Println(r.S3FileURL)
-		time.Sleep(4 * time.Second)
+			uploader := s3manager.NewUploader(newSession)
+			_, err = uploader.Upload(&s3manager.UploadInput{
+				Bucket: bucket,
+				Key:    aws.String(r.RecordingFile),
+				Body:   file,
+			})
+			if err != nil {
+				log.Println(err)
+				return
+			}
+			fileURL := fmt.Sprintf("https://s3.eu-central-1.amazonaws.com/betamediarecording/%s/%s", r.Office, r.RecordingFile)
+			r.S3FileURL = fileURL
+			fmt.Println(r.S3FileURL)
+			time.Sleep(4 * time.Second)
+		}()
 	}
 
 	return nil
