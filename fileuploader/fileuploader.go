@@ -24,32 +24,28 @@ const (
 )
 
 var recordings []RecordingDetails
-var s3recordings []S3RecordingFileDetails
+var s3recordings []RecordingDetails
 var setting ServerConfig
 
 type RecordingDetails struct {
-	CallDate      string `json:"calldate"`
-	ClId          string `json:"clid"`
-	SRC           string `json:"src"`
-	DST           string `json:"dst"`
-	Duration      string `json:"duration"`
-	BillSec       string `json:"billsec"`
-	Disposition   string `json:"disposition"`
-	AccountCode   string `json:"accountcode"`
-	UniqueId      string `json:"uniqueid"`
-	DID           string `json:"did"`
+	CallDate       string `json:"calldate"`
+	ClId           string `json:"clid"`
+	SRC            string `json:"src"`
+	DST            string `json:"dst"`
+	Duration       string `json:"duration"`
+	BillSec        string `json:"billsec"`
+	Disposition    string `json:"disposition"`
+	AccountCode    string `json:"accountcode"`
+	UniqueId       string `json:"uniqueid"`
+	DID            string `json:"did"`
 	Recording_File string `json:"recordingfile"`
-}
-
-type S3RecordingFileDetails struct {
-	RecordingDetails
 	Disk_File_Path string `json:"disk_file_path"`
 	S3_File_URL    string `json:"s_3_file_url"`
-	Office       string `json:"office"`
+	Office         string `json:"office"`
 }
 
 type ServerConfig struct {
-	Office    string `json:"office"`
+	Office     string `json:"office"`
 	Server_URL string `json:"server_url"`
 	AWS_ID     string `json:"aws_id"`
 	AWD_Key    string `json:"awd_key"`
@@ -136,8 +132,8 @@ func Upload2S3() error {
 	}
 
 	for _, r := range s3recordings {
-		func () {
-			file, err := os.Open(r.Disk_File_Path)
+		func(rc *RecordingDetails) {
+			file, err := os.Open(rc.Disk_File_Path)
 			if err != nil {
 				log.Println(err)
 				return
@@ -154,11 +150,11 @@ func Upload2S3() error {
 				log.Println(err)
 				return
 			}
-			fileURL := fmt.Sprintf("https://s3.eu-central-1.amazonaws.com/betamediarecording/%s/%s", r.Office, r.Recording_File)
-			r.S3_File_URL = fileURL
-			fmt.Println(r.S3_File_URL)
-			time.Sleep(4 * time.Second)
-		}()
+			fileURL := fmt.Sprintf("https://s3.eu-central-1.amazonaws.com/betamediarecording/%s", rc.Recording_File)
+			rc.S3_File_URL = fileURL
+			fmt.Println(rc.S3_File_URL)
+			time.Sleep(1 * time.Second)
+		}(&r)
 	}
 
 	return nil
@@ -198,8 +194,9 @@ func main() {
 	for _, record := range recordings {
 		if record.Recording_File != "" {
 			DiskFilePath := findRecord(record.CallDate, record.Recording_File, setting.Office)
-			var s3r = S3RecordingFileDetails{record, DiskFilePath, "", setting.Office}
-			s3recordings = append(s3recordings, s3r)
+			record.Disk_File_Path = DiskFilePath
+			record.Office = setting.Office
+			s3recordings = append(s3recordings, record)
 		}
 	}
 

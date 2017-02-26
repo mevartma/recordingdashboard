@@ -7,6 +7,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 func NewMux() http.Handler {
@@ -35,11 +36,14 @@ func recordingsHandler(resp http.ResponseWriter, req *http.Request) {
 		err = db.UpdateRecording(r, "add")
 	case "GET":
 		var idRange model.RecordingSetting
-		err = json.NewDecoder(req.Body).Decode(&idRange)
+		idRange.From = int64(strconv.Atoi(req.URL.Query().Get("from")))
+		idRange.To = int64(strconv.Atoi(req.URL.Query().Get("to")))
+
+		/*err = json.NewDecoder(req.Body).Decode(&idRange)
 		if err != nil {
 			resp.WriteHeader(http.StatusInternalServerError)
 			return
-		}
+		}*/
 
 		rows, err := db.GetAllRecordingsByRange(idRange.From, idRange.To)
 		if err != nil {

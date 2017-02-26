@@ -27,9 +27,9 @@
                     td_calldate.text(value.calldate);
                     tr.append(td_calldate);
 
-                    var td_clid = $('<td></td>');
+                    /*var td_clid = $('<td></td>');
                     td_clid.text(value.clid);
-                    tr.append(td_clid);
+                    tr.append(td_clid);*/
 
                     var td_src = $('<td></td>');
                     td_src.text(value.src);
@@ -51,7 +51,7 @@
                     td_disposition.text(value.disposition);
                     tr.append(td_disposition);
 
-                    var td_accountcode = $('<td></td>');
+                    /*var td_accountcode = $('<td></td>');
                     td_accountcode.text(value.accountcode);
                     tr.append(td_accountcode);
 
@@ -69,7 +69,7 @@
 
                     var td_disk_file_path = $('<td></td>');
                     td_disk_file_path.text(value.disk_file_path);
-                    tr.append(td_disk_file_path);
+                    tr.append(td_disk_file_path);*/
 
                     var td_s_3_file_url = $('<td></td>');
                     td_s_3_file_url.text(value.s_3_file_url);
@@ -85,73 +85,22 @@
                 console.log(data);
             });
 
-            /*$.getJSON("/api/v1/recordings",function (data) {
-                $.each(data,function (index, value) {
-                    var tr = $('<tr></tr>');
+            $("#recordingdata tfoot th").each(function () {
+               var title = $(this).text();
+               $(this).html( '<input type="text" placeholder="Search '+title+'" />' );
+            });
 
-                    var td_id = $('<td></td>');
-                    td_id.text(value.id);
-                    tr.append(td_id);
+            var table = $("#recordingdata").dataTable();
 
-                    var td_calldate = $('<td></td>');
-                    td_calldate.text(value.calldate);
-                    tr.append(td_calldate);
-
-                    var td_clid = $('<td></td>');
-                    td_clid.text(value.clid);
-                    tr.append(td_clid);
-
-                    var td_src = $('<td></td>');
-                    td_src.text(value.src);
-                    tr.append(td_src);
-
-                    var td_dst = $('<td></td>');
-                    td_dst.text(value.dst);
-                    tr.append(td_dst);
-
-                    var td_duration = $('<td></td>');
-                    td_duration.text(value.duration);
-                    tr.append(td_duration);
-
-                    var td_billsec = $('<td></td>');
-                    td_billsec.text(value.billsec);
-                    tr.append(td_billsec);
-
-                    var td_disposition = $('<td></td>');
-                    td_disposition.text(value.disposition);
-                    tr.append(td_disposition);
-
-                    var td_accountcode = $('<td></td>');
-                    td_accountcode.text(value.accountcode);
-                    tr.append(td_accountcode);
-
-                    var td_uniqueid = $('<td></td>');
-                    td_uniqueid.text(value.uniqueid);
-                    tr.append(td_uniqueid);
-
-                    var td_did = $('<td></td>');
-                    td_did.text(value.did);
-                    tr.append(td_did);
-
-                    var td_recordingfile = $('<td></td>');
-                    td_recordingfile.text(value.recordingfile);
-                    tr.append(td_recordingfile);
-
-                    var td_disk_file_path = $('<td></td>');
-                    td_disk_file_path.text(value.disk_file_path);
-                    tr.append(td_disk_file_path);
-
-                    var td_s_3_file_url = $('<td></td>');
-                    td_s_3_file_url.text(value.s_3_file_url);
-                    tr.append(td_s_3_file_url);
-
-                    var td_office = $('<td></td>');
-                    td_office.text(value.office);
-                    tr.append(td_office);
-
-                    $("tbody").append(tr);
+            table.columns().every(function () {
+               var that = this;
+                $('input', this.footer()).on('keyup change', function () {
+                   if (that.search() !== this.value ) {
+                       that.search(this.value).draw();
+                   }
                 });
-            });*/
+            });
+
             event.preventDefault();
         });
     </script>
@@ -168,30 +117,36 @@
         <div class="panel-body">
             <table id="recordingdata" class="table table-striped">
                 <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>CallDate</th>
-                    <th>ClId</th>
-                    <th>SRC</th>
-                    <th>DST</th>
-                    <th>Duration</th>
-                    <th>BillSec</th>
-                    <th>Disposition</th>
-                    <th>AccountCode</th>
-                    <th>UniqueId</th>
-                    <th>DID</th>
-                    <th>RecordingFile</th>
-                    <th>DiskFilePath</th>
-                    <th>S3FileURL</th>
-                    <th>Office</th>
-                </tr>
+                    <tr>
+                        <th>ID</th>
+                        <th>CallDate</th>
+                        <th>SRC</th>
+                        <th>DST</th>
+                        <th>Duration</th>
+                        <th>BillSec</th>
+                        <th>Disposition</th>
+                        <th>S3FileURL</th>
+                        <th>Office</th>
+                    </tr>
                 </thead>
+                <tfoot>
+                    <tr>
+                        <th>ID</th>
+                        <th>CallDate</th>
+                        <th>SRC</th>
+                        <th>DST</th>
+                        <th>Duration</th>
+                        <th>BillSec</th>
+                        <th>Disposition</th>
+                        <th>S3FileURL</th>
+                        <th>Office</th>
+                    </tr>
+                </tfoot>
                 <tbody></tbody>
             </table>
         </div>
     </div>
 </div>
-
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 </body>
 </html>

@@ -19,8 +19,8 @@ func UpdateRecording(r model.RecordingDetails, action string) error {
 
 	switch action {
 	case "add":
-		stmt, err := db.Prepare("INSERT INTO recordings(calldate,src,dst,duration,billsec,disposition,accountcode,uniqueid,did,recordingfile,diskfilepath,s3fileurl,office) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)")
-		_, err = stmt.Exec(r.CallDate, r.SRC, r.DST, r.Duration, r.BillSec, r.Disposition, r.AccountCode, r.UniqueId, r.DID, r.RecordingFile, r.DiskFilePath, r.S3FileURL, r.Office)
+		stmt, err := db.Prepare("INSERT INTO recordings(calldate,clid,src,dst,duration,billsec,disposition,accountcode,uniqueid,did,recordingfile,diskfilepath,s3fileurl,office) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+		_, err = stmt.Exec(r.CallDate, r.ClId, r.SRC, r.DST, r.Duration, r.BillSec, r.Disposition, r.AccountCode, r.UniqueId, r.DID, r.RecordingFile, r.DiskFilePath, r.S3FileURL, r.Office)
 		return err
 	default:
 		err = errors.New("Command Not Found")
@@ -37,7 +37,7 @@ func GetAllRecordingsByRange(from, to int64) (*[]model.RecordingDetails, error) 
 	}
 	defer db.Close()
 
-	query := "SELECT * FROM recordings WHERE id BETWEEN ? AND ?"
+	query := "SELECT id,calldate,src,dst,duration,billsec,disposition,s3fileurl,office FROM recordings WHERE id BETWEEN ? AND ?"
 	rows, err := db.Query(query, from, to)
 	if err != nil {
 		return nil, err
@@ -45,7 +45,7 @@ func GetAllRecordingsByRange(from, to int64) (*[]model.RecordingDetails, error) 
 
 	for rows.Next() {
 		var r model.RecordingDetails
-		err = rows.Scan(&r.Id, &r.CallDate, &r.SRC, &r.DST, &r.Duration, &r.BillSec, &r.Disposition, &r.AccountCode, &r.UniqueId, &r.DID, &r.RecordingFile, &r.DiskFilePath, &r.S3FileURL, &r.Office)
+		err = rows.Scan(&r.Id, &r.CallDate, &r.SRC, &r.DST, &r.Duration, &r.BillSec, &r.Disposition, &r.S3FileURL, &r.Office)
 		if err != nil {
 			return nil, err
 		}
