@@ -4,12 +4,15 @@
     <meta charset="UTF-8">
     <title>Recording Dashboard</title>
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link href="https://cdn.datatables.net/1.10.13/css/dataTables.bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.13/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.13/js/dataTables.bootstrap.min.js"></script>
     <script>
         $(document).ready(function (event) {
             var formData = {
                 "from": "1",
-                "data": "100"
+                "to": "100"
             };
 
             $.getJSON("/api/v1/recordings",formData,function (data) {
@@ -80,80 +83,6 @@
                 });
             });
 
-            /*$.ajax({
-                type: "GET",
-                url: "/api/v1/recordings",
-                data: JSON.stringify(formData)
-            }).done(function (data) {
-                $.each(data,function (index, value) {
-                    var tr = $('<tr></tr>');
-
-                    var td_id = $('<td></td>');
-                    td_id.text(value.id);
-                    tr.append(td_id);
-
-                    var td_calldate = $('<td></td>');
-                    td_calldate.text(value.calldate);
-                    tr.append(td_calldate);
-
-                    /*var td_clid = $('<td></td>');
-                    td_clid.text(value.clid);
-                    tr.append(td_clid);*/
-
-                    var td_src = $('<td></td>');
-                    td_src.text(value.src);
-                    tr.append(td_src);
-
-                    var td_dst = $('<td></td>');
-                    td_dst.text(value.dst);
-                    tr.append(td_dst);
-
-                    var td_duration = $('<td></td>');
-                    td_duration.text(value.duration);
-                    tr.append(td_duration);
-
-                    var td_billsec = $('<td></td>');
-                    td_billsec.text(value.billsec);
-                    tr.append(td_billsec);
-
-                    var td_disposition = $('<td></td>');
-                    td_disposition.text(value.disposition);
-                    tr.append(td_disposition);
-
-                    /*var td_accountcode = $('<td></td>');
-                    td_accountcode.text(value.accountcode);
-                    tr.append(td_accountcode);
-
-                    var td_uniqueid = $('<td></td>');
-                    td_uniqueid.text(value.uniqueid);
-                    tr.append(td_uniqueid);
-
-                    var td_did = $('<td></td>');
-                    td_did.text(value.did);
-                    tr.append(td_did);
-
-                    var td_recordingfile = $('<td></td>');
-                    td_recordingfile.text(value.recordingfile);
-                    tr.append(td_recordingfile);
-
-                    var td_disk_file_path = $('<td></td>');
-                    td_disk_file_path.text(value.disk_file_path);
-                    tr.append(td_disk_file_path);*/
-
-                    var td_s_3_file_url = $('<td></td>');
-                    td_s_3_file_url.text(value.s_3_file_url);
-                    tr.append(td_s_3_file_url);
-
-                    var td_office = $('<td></td>');
-                    td_office.text(value.office);
-                    tr.append(td_office);
-
-                    $("tbody").append(tr);
-                });
-            /*}).fail(function (data) {
-                console.log(data);
-            });*/
-
             $("#recordingdata tfoot th").each(function () {
                var title = $(this).text();
                $(this).html( '<input type="text" placeholder="Search '+title+'" />' );
@@ -161,7 +90,7 @@
 
             var table = $("#recordingdata").dataTable();
 
-            table.columns().every(function () {
+            table.api().columns().every(function () {
                var that = this;
                 $('input', this.footer()).on('keyup change', function () {
                    if (that.search() !== this.value ) {
@@ -170,7 +99,7 @@
                 });
             });
 
-            event.preventDefault();
+            //event.preventDefault();
         });
     </script>
 </head>
@@ -179,9 +108,6 @@
     <div class="container">
         <div class="page-header">
             <h1>Recording Dashboard</h1>
-        </div>
-        <div class="panel panel-defualt">
-            <h3>Recording List</h3>
         </div>
         <div class="panel-body">
             <table id="recordingdata" class="table table-striped">
