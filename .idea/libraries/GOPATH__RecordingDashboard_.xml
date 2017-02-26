@@ -17,7 +17,9 @@
       <root url="file://$PROJECT_DIR$/../widgetService" />
       <root url="file://$PROJECT_DIR$/../sourcegraph.com" />
       <root url="file://$PROJECT_DIR$/../launchpad.net" />
+      <root url="file://$PROJECT_DIR$/../LPManager" />
       <root url="file://$PROJECT_DIR$/../Dialer" />
+      <root url="file://$PROJECT_DIR$/../QuickProxy" />
       <root url="file://$PROJECT_DIR$/../GmailManager" />
       <root url="file://$PROJECT_DIR$/../nagios" />
       <root url="file://$PROJECT_DIR$/../gocrawl" />
@@ -53,7 +55,9 @@
       <root url="file://$PROJECT_DIR$/../widgetService" />
       <root url="file://$PROJECT_DIR$/../sourcegraph.com" />
       <root url="file://$PROJECT_DIR$/../launchpad.net" />
+      <root url="file://$PROJECT_DIR$/../LPManager" />
       <root url="file://$PROJECT_DIR$/../Dialer" />
+      <root url="file://$PROJECT_DIR$/../QuickProxy" />
       <root url="file://$PROJECT_DIR$/../GmailManager" />
       <root url="file://$PROJECT_DIR$/../nagios" />
       <root url="file://$PROJECT_DIR$/../gocrawl" />
