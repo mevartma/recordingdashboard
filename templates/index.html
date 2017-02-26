@@ -15,7 +15,7 @@
                 "to": "100"
             };
 
-            $.getJSON("/api/v1/recordings",formData,function (data) {
+            /*$.getJSON("/api/v1/recordings",formData,function (data) {
                 $.each(data,function (index, value) {
                     var tr = $('<tr></tr>');
 
@@ -29,9 +29,9 @@
 
                     /*var td_clid = $('<td></td>');
                      td_clid.text(value.clid);
-                     tr.append(td_clid);*/
+                     tr.append(td_clid);
 
-                    var td_src = $('<td></td>');
+                    /*var td_src = $('<td></td>');
                     td_src.text(value.src);
                     tr.append(td_src);
 
@@ -69,9 +69,9 @@
 
                      var td_disk_file_path = $('<td></td>');
                      td_disk_file_path.text(value.disk_file_path);
-                     tr.append(td_disk_file_path);*/
+                     tr.append(td_disk_file_path);
 
-                    var td_s_3_file_url = $('<td></td>');
+                    /*var td_s_3_file_url = $('<td></td>');
                     td_s_3_file_url.text(value.s_3_file_url);
                     tr.append(td_s_3_file_url);
 
@@ -81,6 +81,23 @@
 
                     $("tbody").append(tr);
                 });
+            });*/
+
+            $("#recordingdata").dataTable({
+                "ajax": {
+                    "url": "http://35.157.18.149:8080/api/v1/recordings",
+                    "data": formData
+                }, "columns": [
+                    {"data":"id"},
+                    {"data":"callDate"},
+                    {"data":"src"},
+                    {"data":"dst"},
+                    {"data":"duration"},
+                    {"data":"billSec"},
+                    {"data":"disposition"},
+                    {"data":"s_3_file_url"},
+                    {"data":"office"}
+                ]
             });
 
             $("#recordingdata tfoot th").each(function () {
