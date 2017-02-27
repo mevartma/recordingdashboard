@@ -48,7 +48,7 @@ type ServerConfig struct {
 	Office     string `json:"office"`
 	Server_URL string `json:"server_url"`
 	AWS_ID     string `json:"aws_id"`
-	AWD_Key    string `json:"awd_key"`
+	AWS_Key    string `json:"aws_key"`
 }
 
 func init() {
@@ -120,7 +120,7 @@ func findRecord(recordDate, recordName, officeName string) string {
 func Upload2S3() error {
 	bucket := aws.String("betamediarecording")
 	s3Config := &aws.Config{
-		Credentials:      credentials.NewStaticCredentials(setting.AWS_ID, setting.AWD_Key, ""),
+		Credentials:      credentials.NewStaticCredentials(setting.AWS_ID, setting.AWS_Key, ""),
 		Region:           aws.String("eu-central-1"),
 		DisableSSL:       aws.Bool(true),
 		S3ForcePathStyle: aws.Bool(true),
@@ -132,8 +132,8 @@ func Upload2S3() error {
 	}
 
 	for _, r := range s3recordings {
-		func(rc *RecordingDetails) {
-			file, err := os.Open(rc.Disk_File_Path)
+		func() {
+			file, err := os.Open(r.Disk_File_Path)
 			if err != nil {
 				log.Println(err)
 				return
@@ -150,11 +150,11 @@ func Upload2S3() error {
 				log.Println(err)
 				return
 			}
-			fileURL := fmt.Sprintf("https://s3.eu-central-1.amazonaws.com/betamediarecording/%s", rc.Recording_File)
-			rc.S3_File_URL = fileURL
-			fmt.Println(rc.S3_File_URL)
-			time.Sleep(1 * time.Second)
-		}(&r)
+			fileURL := fmt.Sprintf("https://s3.eu-central-1.amazonaws.com/betamediarecording/%s", r.Recording_File)
+			r.S3_File_URL = fileURL
+			fmt.Println(r.S3_File_URL)
+			//time.Sleep(1 * time.Second)
+		}()
 	}
 
 	return nil
