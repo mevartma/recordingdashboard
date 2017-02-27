@@ -36,14 +36,15 @@ func recordingsHandler(resp http.ResponseWriter, req *http.Request) {
 		err = db.UpdateRecording(r, "add")
 	case "GET":
 		var idRange model.RecordingSetting
-		idRange.From = int64(strconv.Atoi(req.URL.Query().Get("from")))
-		idRange.To = int64(strconv.Atoi(req.URL.Query().Get("to")))
+		tmpFrom, err := strconv.Atoi(req.URL.Query().Get("from"))
+		tmpTo, err := strconv.Atoi(req.URL.Query().Get("to"))
+		idRange.From = int64(tmpFrom)
+		idRange.To = int64(tmpTo)
 
-		/*err = json.NewDecoder(req.Body).Decode(&idRange)
 		if err != nil {
 			resp.WriteHeader(http.StatusInternalServerError)
 			return
-		}*/
+		}
 
 		rows, err := db.GetAllRecordingsByRange(idRange.From, idRange.To)
 		if err != nil {

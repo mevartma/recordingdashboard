@@ -6,9 +6,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awsutil"
 	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	_ "github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
+	_ "github.com/aws/aws-sdk-go/service/s3/s3manager"
 	_ "github.com/go-sql-driver/mysql"
 	"io/ioutil"
 	"log"
@@ -124,37 +126,64 @@ func Upload2S3() error {
 		Region:           aws.String("eu-central-1"),
 		DisableSSL:       aws.Bool(true),
 		S3ForcePathStyle: aws.Bool(true),
+		Endpoint:         aws.String("s3.amazonaws.com"),
 	}
-	newSession, err := session.NewSession(s3Config)
+	s3Client := s3.New(s3Config)
+	/*newSession, err := session.NewSession(s3Config)
 	if err != nil {
 		log.Fatal(err)
 		return err
-	}
+	}*/
 
 	for _, r := range s3recordings {
-		func() {
-			file, err := os.Open(r.Disk_File_Path)
-			if err != nil {
-				log.Println(err)
-				return
-			}
-			defer file.Close()
+		file, err := os.Open(r.Disk_File_Path)
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+		defer file.Close()
 
-			uploader := s3manager.NewUploader(newSession)
-			_, err = uploader.Upload(&s3manager.UploadInput{
-				Bucket: bucket,
-				Key:    aws.String(r.Recording_File),
-				Body:   file,
-			})
-			if err != nil {
-				log.Println(err)
-				return
-			}
-			fileURL := fmt.Sprintf("https://s3.eu-central-1.amazonaws.com/betamediarecording/%s", r.Recording_File)
-			r.S3_File_URL = fileURL
-			fmt.Println(r.S3_File_URL)
-			//time.Sleep(1 * time.Second)
-		}()
+		fileInfo, _ := file.Stat()
+		var size int64 = fileInfo.Size()
+
+		buffer := make([]byte, size)
+		file.Read(buffer)
+		fileBytes := bytes.NewReader(buffer)
+		fileType := http.DetectContentType(buffer)
+		filePath := fmt.Sprintf("/%s/%s", r.Office, r.Recording_File)
+
+		params := &s3.PutObjectInput{
+			Bucket:        bucket,
+			Key:           aws.String(filePath),
+			ACL:           aws.String("public-read"),
+			Body:          fileBytes,
+			ContentLength: aws.Int64(size),
+			ContentType:   aws.String(fileType),
+			Metadata: map[string]*string{
+				"key": aws.String("MetadataValue"),
+			},
+		}
+
+		result, err := s3Client.PutObject(params)
+
+		/*uploader := s3manager.NewUploader(newSession)
+		_, err = uploader.Upload(&s3manager.UploadInput{
+			Bucket: bucket,
+			Key:    aws.String(filePath),
+			ACL: aws.String("public-read"),
+			Body:   file,
+			ContentType: aws.String(fileType),
+			Metadata: map[string]*string{
+				"key": aws.String("MetadataValue"),
+			},
+		})*/
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+		fileURL := fmt.Sprintf("https://s3.eu-central-1.amazonaws.com/betamediarecording/%s/%s", r.Office, r.Recording_File)
+		r.S3_File_URL = fileURL
+		fmt.Println(r.S3_File_URL, awsutil.StringValue(result))
 	}
 
 	return nil
