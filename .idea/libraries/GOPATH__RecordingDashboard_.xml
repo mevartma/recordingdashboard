@@ -18,6 +18,7 @@
       <root url="file://$PROJECT_DIR$/../sourcegraph.com" />
       <root url="file://$PROJECT_DIR$/../launchpad.net" />
       <root url="file://$PROJECT_DIR$/../LPManager" />
+      <root url="file://$PROJECT_DIR$/../LdapAuthExample" />
       <root url="file://$PROJECT_DIR$/../Dialer" />
       <root url="file://$PROJECT_DIR$/../QuickProxy" />
       <root url="file://$PROJECT_DIR$/../GmailManager" />
@@ -56,6 +57,7 @@
       <root url="file://$PROJECT_DIR$/../sourcegraph.com" />
       <root url="file://$PROJECT_DIR$/../launchpad.net" />
       <root url="file://$PROJECT_DIR$/../LPManager" />
+      <root url="file://$PROJECT_DIR$/../LdapAuthExample" />
       <root url="file://$PROJECT_DIR$/../Dialer" />
       <root url="file://$PROJECT_DIR$/../QuickProxy" />
       <root url="file://$PROJECT_DIR$/../GmailManager" />
