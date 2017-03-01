@@ -29,6 +29,32 @@ func UpdateRecording(r model.RecordingDetails, action string) error {
 	return err
 }
 
+func GetAllRecordings() (*[]model.RecordingDetails, error) {
+	var results []model.RecordingDetails
+	db, err := sql.Open(server, dbURL)
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	query := "SELECT id,calldate,src,dst,duration,billsec,disposition,s3fileurl,office FROM recordings"
+	rows, err := db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+
+	for rows.Next() {
+		var r model.RecordingDetails
+		err = rows.Scan(&r.Id, &r.CallDate, &r.SRC, &r.DST, &r.Duration, &r.BillSec, &r.Disposition, &r.S3FileURL, &r.Office)
+		if err != nil {
+			return nil, err
+		}
+		results = append(results, r)
+	}
+
+	return &results, err
+}
+
 func GetAllRecordingsByRange(from, to int64) (*[]model.RecordingDetails, error) {
 	var results []model.RecordingDetails
 	db, err := sql.Open(server, dbURL)

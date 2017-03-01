@@ -20,32 +20,39 @@
                     "url": "/api/v1/recordings",
                     "data": formData,
                     "dataSrc": ""
-                }, "columns": [
-                    { "data": "id" },
-                    { "data": "calldate" },
-                    { "data": "src" },
-                    { "data": "dst" },
+                },
+                "columns": [
+                    { "data": "id", "orderable" : true },
+                    { "data": "calldate", "orderable" : true },
+                    { "data": "src", "orderable" : true },
+                    { "data": "dst", "orderable" : true },
                     { "data": "duration" },
                     { "data": "billsec" },
-                    { "data": "disposition" },
-                    { "data": "s_3_file_url" },
-                    { "data": "office" },
+                    { "data": "disposition", "orderable" : true },
+                    { "render": function(data,type,full,meta){
+                        if(full.disposition == "NO ANSWER"){
+                            return '<lable>NO File</lable>';
+                        } else {
+                            return '<a href="'+full.s_3_file_url+'">Download</a>';
+                        }
+                    }},
+                    { "data": "office", "orderable" : true },
                 ]
             });
 
-            $("#recordingdata tfoot th").each(function () {
-               var title = $(this).text();
-               $(this).html( '<input type="text" placeholder="Search '+title+'" />' );
+            $("#recordingdata thead th").each(function () {
+                var title = $(this).text();
+                $(this).html( '<input type="text" placeholder="Search '+title+'" />' );
             });
 
             var table = $("#recordingdata").dataTable();
 
             table.api().columns().every(function () {
-               var that = this;
+                var that = this;
                 $('input', this.footer()).on('keyup change', function () {
-                   if (that.search() !== this.value ) {
-                       that.search(this.value).draw();
-                   }
+                    if (that.search() !== this.value ) {
+                        that.search(this.value).draw();
+                    }
                 });
             });
 
@@ -64,29 +71,16 @@
                 <thead>
                     <tr>
                         <th>ID</th>
-                        <th>CallDate</th>
-                        <th>SRC</th>
-                        <th>DST</th>
+                        <th>Call Date</th>
+                        <th>Source</th>
+                        <th>Destention</th>
                         <th>Duration</th>
-                        <th>BillSec</th>
-                        <th>Disposition</th>
-                        <th>S3FileURL</th>
+                        <th>Actual Duration</th>
+                        <th>Call Result</th>
+                        <th>Download URL</th>
                         <th>Office</th>
                     </tr>
                 </thead>
-                <tfoot>
-                    <tr>
-                        <th>ID</th>
-                        <th>CallDate</th>
-                        <th>SRC</th>
-                        <th>DST</th>
-                        <th>Duration</th>
-                        <th>BillSec</th>
-                        <th>Disposition</th>
-                        <th>S3FileURL</th>
-                        <th>Office</th>
-                    </tr>
-                </tfoot>
                 <tbody></tbody>
             </table>
         </div>

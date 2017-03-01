@@ -19,25 +19,25 @@
 -- Table structure for table `agents`
 --
 
-DROP TABLE IF EXISTS `recordingdata`;
+DROP TABLE IF EXISTS `recordings`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `recordingdata` (
+CREATE TABLE `recordings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `calldate` varchar(255) NOT NULL,
-  `clid` varchar(255) NOT NULL UNIQUE,
-  `src` varchar(255) NOT NULL,
-  `dst` varchar(255) NOT NULL,
-  `duration` varchar(255) NOT NULL,
-  `billsec` varchar(255) NOT NULL,
-  `disposition` varchar(255) NOT NULL,
-  `accountcode` varchar(255) NOT NULL,
-  `uniqueid` varchar(255) NOT NULL,
-  `did` varchar(255) NOT NULL,
-  `recordingfile` varchar(255) NOT NULL,
-  `diskfilepath` varchar(255) NOT NULL,
-  `s3fileurl` varchar(255) NOT NULL,
-  `office` varchar(255) NOT NULL,
+  `calldate` varchar(255) DEFAULT NULL,
+  `clid` varchar(255) DEFAULT NULL,
+  `src` varchar(255) DEFAULT NULL,
+  `dst` varchar(255) DEFAULT NULL,
+  `duration` varchar(255) DEFAULT NULL,
+  `billsec` varchar(255) DEFAULT NULL,
+  `disposition` varchar(255) DEFAULT NULL,
+  `accountcode` varchar(255) DEFAULT NULL,
+  `uniqueid` varchar(255) DEFAULT NULL,
+  `did` varchar(255) DEFAULT NULL,
+  `recordingfile` varchar(255) DEFAULT NULL,
+  `diskfilepath` varchar(255) DEFAULT NULL,
+  `s3fileurl` varchar(255) DEFAULT NULL,
+  `office` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 

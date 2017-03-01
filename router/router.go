@@ -8,7 +8,17 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"fmt"
 )
+
+var (
+	WorkQueue = make(chan model.RecordingDetails, 200)
+	WorkerQueue chan chan model.RecordingDetails
+)
+
+func init() {
+	startDispatcher(4)
+}
 
 func NewMux() http.Handler {
 	h := http.NewServeMux()
@@ -33,22 +43,27 @@ func recordingsHandler(resp http.ResponseWriter, req *http.Request) {
 
 	switch req.Method {
 	case "POST":
-		err = db.UpdateRecording(r, "add")
+		//err = db.UpdateRecording(r, "add")
+		WorkQueue <- r
 	case "GET":
-		var idRange model.RecordingSetting
-		tmpFrom, err := strconv.Atoi(req.URL.Query().Get("from"))
-		tmpTo, err := strconv.Atoi(req.URL.Query().Get("to"))
-		idRange.From = int64(tmpFrom)
-		idRange.To = int64(tmpTo)
-
-		if err != nil {
-			resp.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-
-		rows, err := db.GetAllRecordingsByRange(idRange.From, idRange.To)
-		if err != nil {
-			resp.WriteHeader(http.StatusInternalServerError)
+		command := req.URL.Query().Get("command")
+		var rows *[]model.RecordingDetails
+		if command == "all" {
+			rows, err = db.GetAllRecordings()
+			if err != nil {
+				resp.WriteHeader(http.StatusInternalServerError)
+			}
+		} else if command == "range" {
+			var idRange model.RecordingSetting
+			tmpFrom, err := strconv.Atoi(req.URL.Query().Get("from"))
+			tmpTo, err := strconv.Atoi(req.URL.Query().Get("to"))
+			idRange.From = int64(tmpFrom)
+			idRange.To = int64(tmpTo)
+			rows, err = db.GetAllRecordingsByRange(idRange.From, idRange.To)
+			if err != nil {
+				resp.WriteHeader(http.StatusInternalServerError)
+				return
+			}
 		}
 
 		for _, rs := range *rows {
@@ -87,3 +102,69 @@ func loggerMid(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 }
+
+//------------------------------------------Workers------------------------------------------------//
+
+type Worker struct {
+	Id          int
+	Work        chan model.RecordingDetails
+	WorkerQueue chan chan model.RecordingDetails
+	QuitChan    chan bool
+}
+
+func NewWorker(id int, workerQueue chan chan model.RecordingDetails) Worker {
+	worker := Worker{
+		Id: id,
+		Work: make(chan model.RecordingDetails),
+		WorkerQueue: workerQueue,
+		QuitChan: make(chan bool),
+	}
+	return worker
+}
+
+func (w *Worker) start() {
+	go func() {
+		for {
+			w.WorkerQueue <- w.Work
+			select {
+			case work := <-w.Work:
+				if err := db.UpdateRecording(work,"add"); err != nil {
+					log.Println(err)
+				}
+			case <-w.QuitChan:
+				fmt.Printf("Worker id:%d stopping\r\n", w.Id)
+				return
+			}
+		}
+	}()
+}
+
+func (w *Worker) stop() {
+	go func() {
+		w.QuitChan <- true
+	}()
+}
+
+func startDispatcher(nWorkers int) {
+	WorkerQueue = make(chan chan model.RecordingDetails, nWorkers)
+
+	for i := 0; i < nWorkers; i++ {
+		fmt.Println("Starting Worker", i+1)
+		worker := NewWorker(i+1,WorkerQueue)
+		worker.start()
+	}
+
+	go func() {
+		for {
+			select {
+			case work := <-WorkQueue:
+				go func() {
+					worker := <-WorkerQueue
+					worker <- work
+				}()
+			}
+		}
+	}()
+}
+
+//------------------------------------------Workers------------------------------------------------//
