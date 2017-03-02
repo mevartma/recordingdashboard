@@ -27,11 +27,11 @@ const (
 //------------------------------------------Workers------------------------------------------------//
 
 var (
-	WorkQueue = make(chan TypeOfWork, 200)
+	WorkQueue   = make(chan TypeOfWork, 200)
 	WorkerQueue chan chan TypeOfWork
-	client = &http.Client{}
-	bucket = aws.String("betamediarecording")
-	s3Client *s3.S3
+	client      = &http.Client{}
+	bucket      = aws.String("betamediarecording")
+	s3Client    *s3.S3
 )
 
 type Worker struct {
@@ -48,10 +48,10 @@ type TypeOfWork struct {
 
 func NewWorker(id int, workerQueue chan chan TypeOfWork) Worker {
 	worker := Worker{
-		Id: id,
-		Work: make(chan TypeOfWork),
+		Id:          id,
+		Work:        make(chan TypeOfWork),
 		WorkerQueue: workerQueue,
-		QuitChan: make(chan bool),
+		QuitChan:    make(chan bool),
 	}
 	return worker
 }
@@ -102,38 +102,38 @@ func (w *Worker) start() {
 						fileURL := fmt.Sprintf("https://s3.eu-central-1.amazonaws.com/betamediarecording/%s/%s", work.Office, work.Recording_File)
 						work.S3_File_URL = fileURL
 						r := RecordingDetails{
-							CallDate: work.CallDate,
-							ClId: work.ClId,
-							SRC: work.SRC,
-							DST: work.DST,
-							Duration: work.Duration,
-							BillSec: work.BillSec,
-							Disposition: work.Disposition,
-							AccountCode: work.AccountCode,
-							UniqueId: work.UniqueId,
-							DID: work.DID,
+							CallDate:       work.CallDate,
+							ClId:           work.ClId,
+							SRC:            work.SRC,
+							DST:            work.DST,
+							Duration:       work.Duration,
+							BillSec:        work.BillSec,
+							Disposition:    work.Disposition,
+							AccountCode:    work.AccountCode,
+							UniqueId:       work.UniqueId,
+							DID:            work.DID,
 							Recording_File: work.Recording_File,
-							S3_File_URL: work.S3_File_URL,
-							Office: work.Office,
+							S3_File_URL:    work.S3_File_URL,
+							Office:         work.Office,
 						}
 						s3ProdRecording = append(s3ProdRecording, r)
 						fmt.Println(work.S3_File_URL, awsutil.StringValue(result.ETag))
 					}
 				} else if work.WorkType == "db" {
 					r := RecordingDetails{
-						CallDate: work.CallDate,
-						ClId: work.ClId,
-						SRC: work.SRC,
-						DST: work.DST,
-						Duration: work.Duration,
-						BillSec: work.BillSec,
-						Disposition: work.Disposition,
-						AccountCode: work.AccountCode,
-						UniqueId: work.UniqueId,
-						DID: work.DID,
+						CallDate:       work.CallDate,
+						ClId:           work.ClId,
+						SRC:            work.SRC,
+						DST:            work.DST,
+						Duration:       work.Duration,
+						BillSec:        work.BillSec,
+						Disposition:    work.Disposition,
+						AccountCode:    work.AccountCode,
+						UniqueId:       work.UniqueId,
+						DID:            work.DID,
 						Recording_File: work.Recording_File,
-						S3_File_URL: work.S3_File_URL,
-						Office: work.Office,
+						S3_File_URL:    work.S3_File_URL,
+						Office:         work.Office,
 					}
 					js, err := json.Marshal(r)
 					if err != nil {
@@ -170,7 +170,7 @@ func startDispatcher(nWorkers int) {
 
 	for i := 0; i < nWorkers; i++ {
 		fmt.Println("Starting Worker", i+1)
-		worker := NewWorker(i+1,WorkerQueue)
+		worker := NewWorker(i+1, WorkerQueue)
 		worker.start()
 	}
 
@@ -275,7 +275,7 @@ func GetAllRecording(date string) (*[]RecordingDetails, error) {
 }
 
 func updateRecords() error {
-	now := time.Now().AddDate(0,0,-1)
+	now := time.Now().AddDate(0, 0, -1)
 	newDate := now.Format("2006-01-02")
 	newDate += "%"
 	rss, err := GetAllRecording(newDate)

@@ -5,14 +5,14 @@ import (
 	"RecordingDashboard/model"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
-	"fmt"
 )
 
 var (
-	WorkQueue = make(chan model.RecordingDetails, 200)
+	WorkQueue   = make(chan model.RecordingDetails, 200)
 	WorkerQueue chan chan model.RecordingDetails
 )
 
@@ -113,10 +113,10 @@ type Worker struct {
 
 func NewWorker(id int, workerQueue chan chan model.RecordingDetails) Worker {
 	worker := Worker{
-		Id: id,
-		Work: make(chan model.RecordingDetails),
+		Id:          id,
+		Work:        make(chan model.RecordingDetails),
 		WorkerQueue: workerQueue,
-		QuitChan: make(chan bool),
+		QuitChan:    make(chan bool),
 	}
 	return worker
 }
@@ -127,7 +127,7 @@ func (w *Worker) start() {
 			w.WorkerQueue <- w.Work
 			select {
 			case work := <-w.Work:
-				if err := db.UpdateRecording(work,"add"); err != nil {
+				if err := db.UpdateRecording(work, "add"); err != nil {
 					log.Println(err)
 				}
 			case <-w.QuitChan:
@@ -149,7 +149,7 @@ func startDispatcher(nWorkers int) {
 
 	for i := 0; i < nWorkers; i++ {
 		fmt.Println("Starting Worker", i+1)
-		worker := NewWorker(i+1,WorkerQueue)
+		worker := NewWorker(i+1, WorkerQueue)
 		worker.start()
 	}
 
