@@ -30,19 +30,17 @@ func NewMux() http.Handler {
 }
 
 func recordingsHandler(resp http.ResponseWriter, req *http.Request) {
-	var r model.RecordingDetails
 	var results []model.RecordingDetails
 	var err error
-	if req.Method != "GET" {
+
+	switch req.Method {
+	case "POST":
+		var r model.RecordingDetails
 		err = json.NewDecoder(req.Body).Decode(&r)
 		if err != nil {
 			resp.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-	}
-
-	switch req.Method {
-	case "POST":
 		//err = db.UpdateRecording(r, "add")
 		WorkQueue <- r
 	case "GET":
@@ -52,6 +50,7 @@ func recordingsHandler(resp http.ResponseWriter, req *http.Request) {
 			rows, err = db.GetAllRecordings()
 			if err != nil {
 				resp.WriteHeader(http.StatusInternalServerError)
+				return
 			}
 		} else if command == "range" {
 			var idRange model.RecordingSetting
