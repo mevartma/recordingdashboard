@@ -27,29 +27,24 @@ const (
 //------------------------------------------Workers------------------------------------------------//
 
 var (
-	WorkQueue   = make(chan TypeOfWork, 200)
-	WorkerQueue chan chan TypeOfWork
+	//WorkQueue   = make(chan RecordingDetails, 200)
+	//WorkerQueue chan chan RecordingDetails
 	client      = &http.Client{}
 	bucket      = aws.String("betamediarecording")
 	s3Client    *s3.S3
 )
 
-type Worker struct {
+/*type Worker struct {
 	Id          int
-	Work        chan TypeOfWork
-	WorkerQueue chan chan TypeOfWork
+	Work        chan RecordingDetails
+	WorkerQueue chan chan RecordingDetails
 	QuitChan    chan bool
 }
 
-type TypeOfWork struct {
-	RecordingDetails
-	WorkType string
-}
-
-func NewWorker(id int, workerQueue chan chan TypeOfWork) Worker {
+func NewWorker(id int, workerQueue chan chan RecordingDetails) Worker {
 	worker := Worker{
 		Id:          id,
-		Work:        make(chan TypeOfWork),
+		Work:        make(chan RecordingDetails),
 		WorkerQueue: workerQueue,
 		QuitChan:    make(chan bool),
 	}
@@ -59,97 +54,11 @@ func NewWorker(id int, workerQueue chan chan TypeOfWork) Worker {
 func (w *Worker) start() {
 	go func() {
 		for {
-			w.WorkerQueue <- w.Work
+			w.WorkerQueue <-w.Work
 			select {
 			case work := <-w.Work:
-				if work.WorkType == "s3" {
-					if work.Recording_File != "" {
-						DiskFilePath := findRecord(work.CallDate, work.Recording_File, setting.Office)
-						work.Disk_File_Path = DiskFilePath
-						work.Office = setting.Office
-
-						file, err := os.Open(work.Disk_File_Path)
-						if err != nil {
-							log.Println(err)
-						}
-
-						fileInfo, _ := file.Stat()
-						var size int64 = fileInfo.Size()
-						buffer := make([]byte, size)
-						file.Read(buffer)
-						fileBytes := bytes.NewReader(buffer)
-						fileType := http.DetectContentType(buffer)
-						filePath := fmt.Sprintf("/%s/%s", work.Office, work.Recording_File)
-						file.Close()
-
-						params := &s3.PutObjectInput{
-							Bucket:        bucket,
-							Key:           aws.String(filePath),
-							ACL:           aws.String("public-read"),
-							Body:          fileBytes,
-							ContentLength: aws.Int64(size),
-							ContentType:   aws.String(fileType),
-							Metadata: map[string]*string{
-								"key": aws.String("MetadataValue"),
-							},
-						}
-
-						result, err := s3Client.PutObject(params)
-						if err != nil {
-							log.Println(err)
-						}
-
-						fileURL := fmt.Sprintf("https://s3.eu-central-1.amazonaws.com/betamediarecording/%s/%s", work.Office, work.Recording_File)
-						work.S3_File_URL = fileURL
-						r := RecordingDetails{
-							CallDate:       work.CallDate,
-							ClId:           work.ClId,
-							SRC:            work.SRC,
-							DST:            work.DST,
-							Duration:       work.Duration,
-							BillSec:        work.BillSec,
-							Disposition:    work.Disposition,
-							AccountCode:    work.AccountCode,
-							UniqueId:       work.UniqueId,
-							DID:            work.DID,
-							Recording_File: work.Recording_File,
-							S3_File_URL:    work.S3_File_URL,
-							Office:         work.Office,
-						}
-						s3ProdRecording = append(s3ProdRecording, r)
-						fmt.Println(work.S3_File_URL, awsutil.StringValue(result.ETag))
-					}
-				} else if work.WorkType == "db" {
-					r := RecordingDetails{
-						CallDate:       work.CallDate,
-						ClId:           work.ClId,
-						SRC:            work.SRC,
-						DST:            work.DST,
-						Duration:       work.Duration,
-						BillSec:        work.BillSec,
-						Disposition:    work.Disposition,
-						AccountCode:    work.AccountCode,
-						UniqueId:       work.UniqueId,
-						DID:            work.DID,
-						Recording_File: work.Recording_File,
-						S3_File_URL:    work.S3_File_URL,
-						Office:         work.Office,
-					}
-					js, err := json.Marshal(r)
-					if err != nil {
-						log.Fatal(err)
-					}
-
-					req, err := http.NewRequest("POST", setting.Server_URL, bytes.NewReader(js))
-					if err != nil {
-						log.Fatal(err)
-					}
-
-					req.Header.Set("Content-Type", "application/json")
-					_, err = client.Do(req)
-					if err != nil {
-						log.Fatal(err)
-					}
+				if err := Upload2S3(work); err != nil {
+					log.Fatal(err)
 				}
 			case <-w.QuitChan:
 				fmt.Printf("Worker id:%d stopping\r\n", w.Id)
@@ -166,7 +75,7 @@ func (w *Worker) stop() {
 }
 
 func startDispatcher(nWorkers int) {
-	WorkerQueue = make(chan chan TypeOfWork, nWorkers)
+	WorkerQueue = make(chan chan RecordingDetails, nWorkers)
 
 	for i := 0; i < nWorkers; i++ {
 		fmt.Println("Starting Worker", i+1)
@@ -185,7 +94,7 @@ func startDispatcher(nWorkers int) {
 			}
 		}
 	}()
-}
+}*/
 
 //------------------------------------------Workers------------------------------------------------//
 
@@ -218,6 +127,7 @@ type ServerConfig struct {
 }
 
 func init() {
+	fmt.Println("init")
 	file, err := ioutil.ReadFile("config.json")
 	if err != nil {
 		log.Fatal("Config File Missing. ", err)
@@ -230,7 +140,7 @@ func init() {
 		os.Exit(1)
 	}
 
-	startDispatcher(4)
+	//startDispatcher(4)
 
 	s3Config := &aws.Config{
 		Credentials:      credentials.NewStaticCredentials(setting.AWS_ID, setting.AWS_Key, ""),
@@ -248,7 +158,57 @@ func init() {
 	s3Client = s3.New(s3Session)
 }
 
+/*func Upload2S3(r RecordingDetails) error {
+	fmt.Printf("Before-if: %v\r\n",r)
+	if r.Recording_File != "" {
+		fmt.Printf("Afterif: %v\r\n",r)
+		DiskFilePath := findRecord(r.CallDate, r.Recording_File, setting.Office)
+		r.Disk_File_Path = DiskFilePath
+		r.Office = setting.Office
+
+		file, err := os.Open(r.Disk_File_Path)
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+
+		fileInfo, _ := file.Stat()
+		var size int64 = fileInfo.Size()
+		buffer := make([]byte, size)
+		file.Read(buffer)
+		fileBytes := bytes.NewReader(buffer)
+		fileType := http.DetectContentType(buffer)
+		filePath := fmt.Sprintf("/%s/%s", r.Office, r.Recording_File)
+		file.Close()
+
+		params := &s3.PutObjectInput{
+			Bucket:        bucket,
+			Key:           aws.String(filePath),
+			ACL:           aws.String("public-read"),
+			Body:          fileBytes,
+			ContentLength: aws.Int64(size),
+			ContentType:   aws.String(fileType),
+			Metadata: map[string]*string{
+				"key": aws.String("MetadataValue"),
+			},
+		}
+
+		result, err := s3Client.PutObject(params)
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+
+		fileURL := fmt.Sprintf("https://s3.eu-central-1.amazonaws.com/betamediarecording/%s/%s", r.Office, r.Recording_File)
+		r.S3_File_URL = fileURL
+		s3ProdRecording = append(s3ProdRecording, r)
+		fmt.Println(r.S3_File_URL, awsutil.StringValue(result.ETag))
+	}
+	return nil
+}*/
+
 func GetAllRecording(date string) (*[]RecordingDetails, error) {
+	fmt.Println("GetAllRecording")
 	var results []RecordingDetails
 	db, err := sql.Open(server, dbURL)
 	if err != nil {
@@ -275,7 +235,8 @@ func GetAllRecording(date string) (*[]RecordingDetails, error) {
 }
 
 func updateRecords() error {
-	now := time.Now().AddDate(0, 0, -1)
+	fmt.Println("updateRecords")
+	now := time.Now()
 	newDate := now.Format("2006-01-02")
 	newDate += "%"
 	rss, err := GetAllRecording(newDate)
@@ -302,6 +263,7 @@ func findRecord(recordDate, recordName, officeName string) string {
 }
 
 func main() {
+	fmt.Println("main")
 	err := updateRecords()
 	if err != nil {
 		log.Fatal("Faild to get data from database", err)
@@ -325,9 +287,8 @@ func main() {
 	s3Client := s3.New(s3Session)*/
 
 	for _, record := range s3recordings {
-		r := TypeOfWork{record, "s3"}
-		WorkQueue <- r
-		/*if record.Recording_File != "" {
+		//WorkQueue <- record
+		if record.Recording_File != "" {
 			DiskFilePath := findRecord(record.CallDate, record.Recording_File, setting.Office)
 			record.Disk_File_Path = DiskFilePath
 			record.Office = setting.Office
@@ -367,13 +328,11 @@ func main() {
 			record.S3_File_URL = fileURL
 			s3ProdRecording = append(s3ProdRecording, record)
 			fmt.Println(record.S3_File_URL, awsutil.StringValue(result.ETag))
-		}*/
+		}
 	}
 
 	for _, record := range s3ProdRecording {
-		r := TypeOfWork{record, "db"}
-		WorkQueue <- r
-		/*js, err := json.Marshal(record)
+		js, err := json.Marshal(record)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -385,7 +344,7 @@ func main() {
 		_, err = client.Do(req)
 		if err != nil {
 			log.Fatal(err)
-		}*/
+		}
 	}
 
 	os.Exit(1)
