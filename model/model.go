@@ -1,5 +1,7 @@
 package model
 
+import "time"
+
 type RecordingDetails struct {
 	Id            int64  `json:"id"`
 	CallDate      string `json:"calldate"`
@@ -21,6 +23,33 @@ type RecordingDetails struct {
 type RecordingSetting struct {
 	From int64 `json:"from"`
 	To   int64 `json:"to"`
+}
+
+type UserGroups struct {
+	GroupName string `json:"groupname"`
+}
+
+type UserNameAndPassword struct {
+	Username string
+	Password string
+}
+
+type UserName struct {
+	Username string `json:"username"`
+}
+
+type UserResult struct {
+	Username string `json:"username"`
+	Result   bool   `json:"result"`
+}
+
+type UserDetails struct {
+	Id         int64
+	UserName   string
+	IpAddress  string
+	UserAgent  string
+	Cookie     string
+	ExpireTime time.Time
 }
 
 /*type UserDetails struct {

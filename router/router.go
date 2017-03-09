@@ -9,6 +9,8 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"RecordingDashboard/utils"
+	"time"
 )
 
 var (
@@ -25,6 +27,7 @@ func NewMux() http.Handler {
 	fs := http.FileServer(http.Dir("templates/"))
 	h.Handle("/app/", loggerMid(http.StripPrefix("/app", fs)))
 	h.Handle("/api/v1/recordings", loggerMid(http.HandlerFunc(recordingsHandler)))
+	h.Handle("/api/v1/user", loggerMid(http.HandlerFunc(usersHandler)))
 
 	return h
 }
@@ -86,6 +89,55 @@ func recordingsHandler(resp http.ResponseWriter, req *http.Request) {
 	resp.Header().Set("Content-type", "application/json")
 	resp.Write(js)
 	return
+}
+
+func usersHandler(resp http.ResponseWriter, req *http.Request) {
+	req.ParseForm()
+	var user model.UserNameAndPassword
+	var realUser model.UserDetails
+
+	user.Username = fmt.Sprintf("%v", req.Form["username"])
+	user.Password = fmt.Sprintf("%v", req.Form["password"])
+
+	result, err := utils.ValidateUserName(user,"ITGroup")
+	if err != nil {
+		resp.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if result == false {
+		resp.WriteHeader(http.StatusForbidden)
+		return
+	}
+
+	sessionID := utils.CreateSessionCoockie(user.Username)
+	var clIP string
+	if req.Header.Get("X-Forwarded-For") == "" {
+		clIP = req.RemoteAddr
+	} else {
+		clIP = req.Header.Get("X-Forwarded-For")
+	}
+	exprDate := time.Now().AddDate(0,0,1)
+
+	realUser.UserName = user.Username
+	realUser.IpAddress = clIP
+	realUser.UserAgent = req.Header.Get("User-Agent")
+	realUser.Cookie = sessionID
+	realUser.ExpireTime = exprDate
+	err = db.UpdateUser(realUser,"add")
+	if err != nil {
+		resp.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	cookieMonster := &http.Cookie{
+		Name: "SessionID",
+		Expires: exprDate,
+		Value: sessionID,
+	}
+
+	http.SetCookie(resp, cookieMonster)
+	http.Redirect(resp,req,"/app",http.StatusOK)
 }
 
 func loggerMid(next http.Handler) http.Handler {

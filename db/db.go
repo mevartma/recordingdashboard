@@ -29,6 +29,23 @@ func UpdateRecording(r model.RecordingDetails, action string) error {
 	return err
 }
 
+func UpdateUser(r model.UserDetails, action string) error {
+	var err error
+	db, err := sql.Open(server, dbURL)
+	defer db.Close()
+
+	switch action {
+	case "add":
+		stmt, err := db.Prepare("INSERT INTO userssessions(username,ipaddress,useragent,cookie,expiretime) VALUES (?,?,?,?,?)")
+		_, err = stmt.Exec(r.UserName,r.IpAddress,r.UserAgent,r.Cookie,r.ExpireTime)
+		return err
+	default:
+		err = errors.New("Command Not Found")
+	}
+
+	return err
+}
+
 func GetAllRecordings() (*[]model.RecordingDetails, error) {
 	var results []model.RecordingDetails
 	db, err := sql.Open(server, dbURL)

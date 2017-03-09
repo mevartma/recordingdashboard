@@ -24,79 +24,12 @@ const (
 	server string = "mysql"
 )
 
-//------------------------------------------Workers------------------------------------------------//
 
 var (
-	//WorkQueue   = make(chan RecordingDetails, 200)
-	//WorkerQueue chan chan RecordingDetails
 	client      = &http.Client{}
 	bucket      = aws.String("betamediarecording")
 	s3Client    *s3.S3
 )
-
-/*type Worker struct {
-	Id          int
-	Work        chan RecordingDetails
-	WorkerQueue chan chan RecordingDetails
-	QuitChan    chan bool
-}
-
-func NewWorker(id int, workerQueue chan chan RecordingDetails) Worker {
-	worker := Worker{
-		Id:          id,
-		Work:        make(chan RecordingDetails),
-		WorkerQueue: workerQueue,
-		QuitChan:    make(chan bool),
-	}
-	return worker
-}
-
-func (w *Worker) start() {
-	go func() {
-		for {
-			w.WorkerQueue <-w.Work
-			select {
-			case work := <-w.Work:
-				if err := Upload2S3(work); err != nil {
-					log.Fatal(err)
-				}
-			case <-w.QuitChan:
-				fmt.Printf("Worker id:%d stopping\r\n", w.Id)
-				return
-			}
-		}
-	}()
-}
-
-func (w *Worker) stop() {
-	go func() {
-		w.QuitChan <- true
-	}()
-}
-
-func startDispatcher(nWorkers int) {
-	WorkerQueue = make(chan chan RecordingDetails, nWorkers)
-
-	for i := 0; i < nWorkers; i++ {
-		fmt.Println("Starting Worker", i+1)
-		worker := NewWorker(i+1, WorkerQueue)
-		worker.start()
-	}
-
-	go func() {
-		for {
-			select {
-			case work := <-WorkQueue:
-				go func() {
-					worker := <-WorkerQueue
-					worker <- work
-				}()
-			}
-		}
-	}()
-}*/
-
-//------------------------------------------Workers------------------------------------------------//
 
 var s3ProdRecording []RecordingDetails
 var s3recordings []RecordingDetails
@@ -140,8 +73,6 @@ func init() {
 		os.Exit(1)
 	}
 
-	//startDispatcher(4)
-
 	s3Config := &aws.Config{
 		Credentials:      credentials.NewStaticCredentials(setting.AWS_ID, setting.AWS_Key, ""),
 		Region:           aws.String("eu-central-1"),
@@ -157,55 +88,6 @@ func init() {
 
 	s3Client = s3.New(s3Session)
 }
-
-/*func Upload2S3(r RecordingDetails) error {
-	fmt.Printf("Before-if: %v\r\n",r)
-	if r.Recording_File != "" {
-		fmt.Printf("Afterif: %v\r\n",r)
-		DiskFilePath := findRecord(r.CallDate, r.Recording_File, setting.Office)
-		r.Disk_File_Path = DiskFilePath
-		r.Office = setting.Office
-
-		file, err := os.Open(r.Disk_File_Path)
-		if err != nil {
-			log.Println(err)
-			return err
-		}
-
-		fileInfo, _ := file.Stat()
-		var size int64 = fileInfo.Size()
-		buffer := make([]byte, size)
-		file.Read(buffer)
-		fileBytes := bytes.NewReader(buffer)
-		fileType := http.DetectContentType(buffer)
-		filePath := fmt.Sprintf("/%s/%s", r.Office, r.Recording_File)
-		file.Close()
-
-		params := &s3.PutObjectInput{
-			Bucket:        bucket,
-			Key:           aws.String(filePath),
-			ACL:           aws.String("public-read"),
-			Body:          fileBytes,
-			ContentLength: aws.Int64(size),
-			ContentType:   aws.String(fileType),
-			Metadata: map[string]*string{
-				"key": aws.String("MetadataValue"),
-			},
-		}
-
-		result, err := s3Client.PutObject(params)
-		if err != nil {
-			log.Println(err)
-			return err
-		}
-
-		fileURL := fmt.Sprintf("https://s3.eu-central-1.amazonaws.com/betamediarecording/%s/%s", r.Office, r.Recording_File)
-		r.S3_File_URL = fileURL
-		s3ProdRecording = append(s3ProdRecording, r)
-		fmt.Println(r.S3_File_URL, awsutil.StringValue(result.ETag))
-	}
-	return nil
-}*/
 
 func GetAllRecording(date string) (*[]RecordingDetails, error) {
 	fmt.Println("GetAllRecording")
@@ -270,24 +152,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	/*bucket := aws.String("betamediarecording")
-	s3Config := &aws.Config{
-		Credentials:      credentials.NewStaticCredentials(setting.AWS_ID, setting.AWS_Key, ""),
-		Region:           aws.String("eu-central-1"),
-		DisableSSL:       aws.Bool(true),
-		S3ForcePathStyle: aws.Bool(true),
-		Endpoint:         aws.String("s3.eu-central-1.amazonaws.com"),
-	}
-
-	s3Session, err := session.NewSession(s3Config)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	s3Client := s3.New(s3Session)*/
-
 	for _, record := range s3recordings {
-		//WorkQueue <- record
 		if record.Recording_File != "" {
 			DiskFilePath := findRecord(record.CallDate, record.Recording_File, setting.Office)
 			record.Disk_File_Path = DiskFilePath

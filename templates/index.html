@@ -11,6 +11,7 @@
     <script>
         $(document).ready(function (event) {
             var formData = {
+                "command": "all",
                 "from": "1",
                 "to": "100"
             };
@@ -33,12 +34,15 @@
                         if(full.disposition == "NO ANSWER"){
                             return '<lable>NO File</lable>';
                         } else {
-                            return '<a href="'+full.s_3_file_url+'">Download</a>';
+                            return '<audio controls><source src="'+full.s_3_file_url+'" type="audio/wav" preload="none"></audio>';
+                            //return '<a href="'+full.s_3_file_url+'">Download</a>';
                         }
                     }},
                     { "data": "office", "orderable" : true },
                 ]
-            });
+            }).success(
+
+            );
 
             $("#recordingdata thead th").each(function () {
                 var title = $(this).text();

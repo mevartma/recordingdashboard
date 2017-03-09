@@ -55,20 +55,19 @@ CREATE TABLE `credentials` (
 ) ENGINE=InnoDB AUTO_INCREMENT=230 DEFAULT CHARSET=latin1;
 */
 
-/*DROP TABLE IF EXISTS `users`;*/
+DROP TABLE IF EXISTS `userssessions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-/*
-CREATE TABLE `users` (
+
+CREATE TABLE `userssessions` (
 	  `id` int(11) NOT NULL AUTO_INCREMENT,
-	  `username` varchar(255) DEFAULT NULL,
-	  `email` varchar(255) DEFAULT NULL,
-	  `group_tag` varchar(255) DEFAULT NULL,
-	  `password` varchar(255) DEFAULT NULL,
-	  `active` TINYINT(1) NOT NULL,
+	  `username` varchar(255) NOT NULL,
+	  `ipaddress` varchar(255) NOT NULL,
+	  `useragent` varchar(255) NOT NULL,
+	  `cookie` varchar(255) NOT NULL,
+	  `expiretime` DATETIME NOT NULL,
 	  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=230 DEFAULT CHARSET=latin1;
-*/
 
 /*!40101 SET character_set_client = @saved_cs_client */;
 
