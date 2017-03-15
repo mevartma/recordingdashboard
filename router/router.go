@@ -24,6 +24,7 @@ func init() {
 	startDispatcher(4)
 }
 
+
 func NewMux() http.Handler {
 	h := http.NewServeMux()
 	h.Handle("/app", loggerMid(authMid(http.HandlerFunc(appPage))))
