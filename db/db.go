@@ -29,7 +29,45 @@ func UpdateRecording(r model.RecordingDetails, action string) error {
 	return err
 }
 
+func GetSessionId(s string) (bool, *model.UserDetails, error) {
+	var err error
+	var results model.UserDetails
+	db, err := sql.Open(server, dbURL)
+	defer db.Close()
+	query := "SELECT * FROM userssessions WHERE cookie = ? LIMIT 1"
+	rows, err := db.Query(query, s)
+	if err != nil {
+		return false, nil, err
+	}
+	for rows.Next() {
+		err = rows.Scan(&results.Id, &results.UserName, &results.IpAddress, &results.UserAgent, &results.Cookie, &results.ExpireTime)
+		if err != nil {
+			return false, nil, err
+		}
+	}
+
+	if results.UserName != "" {
+		return true, &results, err
+	}
+
+	return false, &results, err
+}
+
+func DeleteSessionId(s string) error {
+	db, err := sql.Open(server, dbURL)
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	stmt, err := db.Prepare("DELETE FROM userssessions WHERE cookie = ?")
+	_, err = stmt.Exec(s)
+
+	return err
+}
+
 func UpdateUser(r model.UserDetails, action string) error {
+
 	var err error
 	db, err := sql.Open(server, dbURL)
 	defer db.Close()
@@ -37,7 +75,7 @@ func UpdateUser(r model.UserDetails, action string) error {
 	switch action {
 	case "add":
 		stmt, err := db.Prepare("INSERT INTO userssessions(username,ipaddress,useragent,cookie,expiretime) VALUES (?,?,?,?,?)")
-		_, err = stmt.Exec(r.UserName,r.IpAddress,r.UserAgent,r.Cookie,r.ExpireTime)
+		_, err = stmt.Exec(r.UserName, r.IpAddress, r.UserAgent, r.Cookie, r.ExpireTime)
 		return err
 	default:
 		err = errors.New("Command Not Found")

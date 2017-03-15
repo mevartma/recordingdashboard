@@ -1,7 +1,5 @@
 package model
 
-import "time"
-
 type RecordingDetails struct {
 	Id            int64  `json:"id"`
 	CallDate      string `json:"calldate"`
@@ -49,7 +47,7 @@ type UserDetails struct {
 	IpAddress  string
 	UserAgent  string
 	Cookie     string
-	ExpireTime time.Time
+	ExpireTime string
 }
 
 /*type UserDetails struct {

@@ -6,11 +6,13 @@ import (
 	"encoding/json"
 	"log"
 	"bytes"
-	"crypto/sha512"
 	"encoding/hex"
+	"time"
+	"fmt"
+	"crypto/sha1"
 )
 
-var client = &http.Client{}
+var httpClient = http.Client{}
 
 
 func ValidateUserName(u model.UserNameAndPassword, g string) (bool, error) {
@@ -26,15 +28,16 @@ func ValidateUserName(u model.UserNameAndPassword, g string) (bool, error) {
 	req, err := http.NewRequest("POST", userURL, bytes.NewReader(js))
 	if err != nil {
 		log.Fatal(err)
+		return false,err
 	}
 	req.Header.Set("Content-Type", "application/json")
-	_, err = client.Do(req)
+	respUserURL, err := httpClient.Do(req)
 	if err != nil {
 		log.Fatal(err)
 		return false,err
 	}
 
-	err = json.NewDecoder(req.Body).Decode(&result)
+	err = json.NewDecoder(respUserURL.Body).Decode(&result)
 	if err != nil {
 		log.Fatal(err)
 		return false,err
@@ -59,13 +62,13 @@ func ValidateUserName(u model.UserNameAndPassword, g string) (bool, error) {
 			log.Fatal(err)
 		}
 		req.Header.Set("Content-Type", "application/json")
-		_, err = client.Do(req)
+		respGroupURL, err := httpClient.Do(req)
 		if err != nil {
 			log.Fatal(err)
 			return false,err
 		}
 
-		err = json.NewDecoder(req.Body).Decode(&usergroups)
+		err = json.NewDecoder(respGroupURL.Body).Decode(&usergroups)
 		if err != nil {
 			log.Fatal(err)
 			return false,err
@@ -82,9 +85,10 @@ func ValidateUserName(u model.UserNameAndPassword, g string) (bool, error) {
 	return false,err
 }
 
-func CreateSessionCoockie(toHash string) string {
-	h := sha512.New()
-	h.Write([]byte(toHash))
+func CreateSessionCoockie(toHash string, t time.Time) string {
+	h := sha1.New()
+	stringToHash := fmt.Sprintf("%s%v",toHash,t)
+	h.Write([]byte(stringToHash))
 
 	sha512String := hex.EncodeToString(h.Sum(nil))
 	return sha512String

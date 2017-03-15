@@ -3,13 +3,15 @@ package router
 import (
 	"RecordingDashboard/db"
 	"RecordingDashboard/model"
+	"RecordingDashboard/utils"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 	"strconv"
-	"RecordingDashboard/utils"
+	"strings"
 	"time"
 )
 
@@ -24,12 +26,33 @@ func init() {
 
 func NewMux() http.Handler {
 	h := http.NewServeMux()
-	fs := http.FileServer(http.Dir("templates/"))
-	h.Handle("/app/", loggerMid(http.StripPrefix("/app", fs)))
-	h.Handle("/api/v1/recordings", loggerMid(http.HandlerFunc(recordingsHandler)))
-	h.Handle("/api/v1/user", loggerMid(http.HandlerFunc(usersHandler)))
+	h.Handle("/app", loggerMid(authMid(http.HandlerFunc(appPage))))
+	h.Handle("/api/v1/recordings", loggerMid(authMid(http.HandlerFunc(recordingsHandler))))
+	h.Handle("/login", loggerMid(http.HandlerFunc(loginPage)))
+	h.Handle("/api/v1/users/loginuser", loggerMid(http.HandlerFunc(usersLoginHandler)))
+	h.Handle("/api/v1/users/logoutuser", loggerMid(http.HandlerFunc(usersLogoutHandler)))
+	h.Handle("/favicon.ico", loggerMid(http.HandlerFunc(fav)))
+	h.Handle("/", loggerMid(http.HandlerFunc(home)))
 
 	return h
+}
+
+func fav(resp http.ResponseWriter, req *http.Request) {
+	resp.WriteHeader(http.StatusOK)
+}
+
+func loginPage(resp http.ResponseWriter, req *http.Request) {
+	t, _ := template.ParseFiles("templates/login.html")
+	t.Execute(resp, nil)
+}
+
+func appPage(resp http.ResponseWriter, req *http.Request) {
+	t, _ := template.ParseFiles("templates/index.html")
+	t.Execute(resp,nil)
+}
+
+func home(resp http.ResponseWriter, req *http.Request) {
+	http.Redirect(resp, req, "/login", http.StatusFound)
 }
 
 func recordingsHandler(resp http.ResponseWriter, req *http.Request) {
@@ -91,53 +114,80 @@ func recordingsHandler(resp http.ResponseWriter, req *http.Request) {
 	return
 }
 
-func usersHandler(resp http.ResponseWriter, req *http.Request) {
+func usersLoginHandler(resp http.ResponseWriter, req *http.Request) {
 	req.ParseForm()
 	var user model.UserNameAndPassword
 	var realUser model.UserDetails
 
-	user.Username = fmt.Sprintf("%v", req.Form["username"])
-	user.Password = fmt.Sprintf("%v", req.Form["password"])
+	user.Username = strings.Replace(fmt.Sprintf("%s", req.Form["username"]), "[", "", -1)
+	user.Username = strings.Replace(user.Username, "]", "", -1)
+	user.Password = strings.Replace(fmt.Sprintf("%s", req.Form["password"]), "[", "", -1)
+	user.Password = strings.Replace(user.Password, "]", "", -1)
 
-	result, err := utils.ValidateUserName(user,"ITGroup")
+	result, err := utils.ValidateUserName(user, "ITGroup")
 	if err != nil {
 		resp.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	if result == false {
-		resp.WriteHeader(http.StatusForbidden)
+		http.Redirect(resp, req, "/login", http.StatusFound)
 		return
 	}
 
-	sessionID := utils.CreateSessionCoockie(user.Username)
+	exprDate := time.Now().AddDate(0, 0, 1)
+
+	sessionID := utils.CreateSessionCoockie(user.Username, exprDate)
 	var clIP string
 	if req.Header.Get("X-Forwarded-For") == "" {
 		clIP = req.RemoteAddr
 	} else {
 		clIP = req.Header.Get("X-Forwarded-For")
 	}
-	exprDate := time.Now().AddDate(0,0,1)
 
 	realUser.UserName = user.Username
 	realUser.IpAddress = clIP
 	realUser.UserAgent = req.Header.Get("User-Agent")
 	realUser.Cookie = sessionID
-	realUser.ExpireTime = exprDate
-	err = db.UpdateUser(realUser,"add")
+	realUser.ExpireTime = exprDate.String()
+	err = db.UpdateUser(realUser, "add")
 	if err != nil {
 		resp.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	cookieMonster := &http.Cookie{
-		Name: "SessionID",
-		Expires: exprDate,
-		Value: sessionID,
+		Name:     "SessionID",
+		Expires:  exprDate,
+		Value:    sessionID,
+		HttpOnly: true,
+		MaxAge:   50000,
+		Path:     "/",
 	}
 
 	http.SetCookie(resp, cookieMonster)
-	http.Redirect(resp,req,"/app",http.StatusOK)
+	http.Redirect(resp, req, "/app", http.StatusFound)
+	return
+}
+
+func usersLogoutHandler(resp http.ResponseWriter, req *http.Request) {
+	cookie, err := req.Cookie("SessionID")
+	if err != nil {
+		resp.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	_ = db.DeleteSessionId(cookie.Value)
+
+	exprDate := time.Now()
+	cookieMonster := &http.Cookie{
+		Name:    "SessionID",
+		Expires: exprDate,
+		Value:   "",
+	}
+
+	http.SetCookie(resp, cookieMonster)
+	http.Redirect(resp, req, "/login", http.StatusFound)
 }
 
 func loggerMid(next http.Handler) http.Handler {
@@ -151,6 +201,42 @@ func loggerMid(next http.Handler) http.Handler {
 		uAgent := r.Header.Get("User-Agent")
 		log.Printf("\"Method\": \"%s\", \"User-Agent\": \"%s\", \"URL\": \"%s\", \"Host\": \"[%s]\", \"Client-IP\": \"%v\"", r.Method, uAgent, r.URL, r.Host, clIP)
 		next.ServeHTTP(w, r)
+	})
+}
+
+func authMid(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var clIP string
+		if r.Header.Get("X-Forwarded-For") == "" {
+			clIP = r.RemoteAddr
+		} else {
+			clIP = r.Header.Get("X-Forwarded-For")
+		}
+		uAgent := r.Header.Get("User-Agent")
+
+		cookie, err := r.Cookie("SessionID")
+		if err != nil {
+			http.Redirect(w, r, "/login", http.StatusFound)
+			return
+		}
+
+		if cookie == nil {
+			http.Redirect(w, r, "/login", http.StatusFound)
+			return
+		}
+
+		status, user, err := db.GetSessionId(cookie.Value)
+		if err != nil {
+			http.Redirect(w, r, "/login", http.StatusFound)
+			return
+		}
+
+		if status == true && user.UserAgent == uAgent && user.IpAddress == clIP {
+			next.ServeHTTP(w, r)
+		} else {
+			http.Redirect(w, r, "/login", http.StatusFound)
+			return
+		}
 	})
 }
 

@@ -64,8 +64,8 @@ CREATE TABLE `userssessions` (
 	  `username` varchar(255) NOT NULL,
 	  `ipaddress` varchar(255) NOT NULL,
 	  `useragent` varchar(255) NOT NULL,
-	  `cookie` varchar(255) NOT NULL,
-	  `expiretime` DATETIME NOT NULL,
+	  `cookie` varchar(1024) NOT NULL,
+	  `expiretime` VARCHAR(255) NOT NULL,
 	  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=230 DEFAULT CHARSET=latin1;
 
