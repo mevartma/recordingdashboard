@@ -1,0 +1,35 @@
+BUILDPATH=$(CURDIR)
+GO=$(shell which go)
+GOINSTALL=$(GO) install
+GOBUILD=$(GO) build
+GOCLEAN=$(GO) clean
+GOGET=$(GO) get
+INSTALLFOLDER=/root/recordingsystem
+LOGFILE=/var/log/recordingsystem.log
+
+EXENAME=main
+
+get:
+	@echo "Start to get Deps..."
+	@$(GOGET) github.com/go-sql-driver/mysql
+	@$(GOGET) -u github.com/aws/aws-sdk-go
+
+build:
+	@echo "Start building.."
+	$(GOBUILD) $(EXENAME)
+	@echo "Done building"
+
+install:
+	@echo "Start to install service"
+	@if [ ! -d $(INSTALLFOLDER) ] ; then mkdir -p $(INSTALLFOLDER) ; fi
+	@mv $(EXENAME) $(INSTALLFOLDER)/recording
+	@cp -rv $(BUILDPATH)/templates $(INSTALLFOLDER)/
+	@$(INSTALLFOLDER)/recording > $(LOGFILE) &
+
+clean:
+	@echo "cleaning"
+	@rm -Rvf $(BUILDPATH)/bin/$(EXENAME)
+	@rm -Rvf $(BUILDPATH)/pkg
+	@rm -Rvf $(BUILDPATH)/src/github.com
+
+all: get build install
