@@ -146,6 +146,9 @@ func usersLoginHandler(resp http.ResponseWriter, req *http.Request) {
 		clIP = req.Header.Get("X-Forwarded-For")
 	}
 
+	realip := strings.Split(clIP,":")
+	clIP = realip[0]
+
 	realUser.UserName = user.Username
 	realUser.IpAddress = clIP
 	realUser.UserAgent = req.Header.Get("User-Agent")
@@ -199,6 +202,8 @@ func loggerMid(next http.Handler) http.Handler {
 		} else {
 			clIP = r.Header.Get("X-Forwarded-For")
 		}
+		realip := strings.Split(clIP,":")
+		clIP = realip[0]
 		uAgent := r.Header.Get("User-Agent")
 		log.Printf("\"Method\": \"%s\", \"User-Agent\": \"%s\", \"URL\": \"%s\", \"Host\": \"[%s]\", \"Client-IP\": \"%v\"", r.Method, uAgent, r.URL, r.Host, clIP)
 		next.ServeHTTP(w, r)

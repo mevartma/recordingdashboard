@@ -7,5 +7,5 @@ import (
 )
 
 func main() {
-	log.Fatal(http.ListenAndServe(":8080", router.NewMux()))
+	log.Fatal(http.ListenAndServe(":80", router.NewMux()))
 }
