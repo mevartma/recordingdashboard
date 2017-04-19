@@ -16,7 +16,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
-	"time"
+	_ "time"
 )
 
 const (
@@ -89,7 +89,7 @@ func init() {
 	s3Client = s3.New(s3Session)
 }
 
-func GetAllRecording(date string) (*[]RecordingDetails, error) {
+func GetRecordingByDate(date string) (*[]RecordingDetails, error) {
 	fmt.Println("GetAllRecording")
 	var results []RecordingDetails
 	db, err := sql.Open(server, dbURL)
@@ -116,12 +116,39 @@ func GetAllRecording(date string) (*[]RecordingDetails, error) {
 	return &results, err
 }
 
+func GetAllRecording() (*[]RecordingDetails, error) {
+	fmt.Println("GetAllRecording")
+	var results []RecordingDetails
+	db, err := sql.Open(server, dbURL)
+	if err != nil {
+		return &results, err
+	}
+	defer db.Close()
+
+	query := "SELECT calldate,clid,src,dst,duration,billsec,disposition,accountcode,uniqueid,did,recordingfile FROM cdr"
+	rows, err := db.Query(query)
+	if err != nil {
+		return &results, err
+	}
+
+	for rows.Next() {
+		var r RecordingDetails
+		err = rows.Scan(&r.CallDate, &r.ClId, &r.SRC, &r.DST, &r.Duration, &r.BillSec, &r.Disposition, &r.AccountCode, &r.UniqueId, &r.DID, &r.Recording_File)
+		if err != nil {
+			return &results, err
+		}
+		results = append(results, r)
+	}
+
+	return &results, err
+}
+
 func updateRecords() error {
 	fmt.Println("updateRecords")
-	now := time.Now()
+	/*now := time.Now()
 	newDate := now.Format("2006-01-02")
-	newDate += "%"
-	rss, err := GetAllRecording(newDate)
+	newDate += "%"*/
+	rss, err := GetAllRecording()
 	s3recordings = nil
 	for _, rs := range *rss {
 		s3recordings = append(s3recordings, rs)

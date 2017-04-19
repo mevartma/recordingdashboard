@@ -125,7 +125,7 @@ func usersLoginHandler(resp http.ResponseWriter, req *http.Request) {
 	user.Password = strings.Replace(fmt.Sprintf("%s", req.Form["password"]), "[", "", -1)
 	user.Password = strings.Replace(user.Password, "]", "", -1)
 
-	result, err := utils.ValidateUserName(user, "ITGroup")
+	result, err := utils.ValidateUserName(user, "RecrodingSystem")
 	if err != nil {
 		resp.WriteHeader(http.StatusInternalServerError)
 		return
@@ -213,6 +213,10 @@ func authMid(next http.Handler) http.Handler {
 		} else {
 			clIP = r.Header.Get("X-Forwarded-For")
 		}
+
+		realip := strings.Split(clIP,":")
+		clIP = realip[0]
+
 		if clIP == "192.168.50.14" || clIP == "192.168.150.113" {
 			next.ServeHTTP(w,r)
 		} else {

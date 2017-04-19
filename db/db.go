@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	dbURL  string = "recordinguser:410QMYbh@tcp(localhost:3306)/recordingdb"
+	dbURL  string = "root:@tcp(localhost:3306)/recordingdb"
 	server string = "mysql"
 )
 
