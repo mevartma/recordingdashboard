@@ -205,7 +205,7 @@ func loggerMid(next http.Handler) http.Handler {
 		realip := strings.Split(clIP,":")
 		clIP = realip[0]
 		uAgent := req.Header.Get("User-Agent")
-		log.Printf("\"Method\": \"%s\", \"User-Agent\": \"%s\", \"URL\": \"%s\", \"Host\": \"[%s]\", \"Client-IP\": \"%v\"", req.Method, uAgent, r.URL, r.Host, clIP)
+		log.Printf("\"Method\": \"%s\", \"User-Agent\": \"%s\", \"URL\": \"%s\", \"Host\": \"[%s]\", \"Client-IP\": \"%v\"", req.Method, uAgent, req.URL, req.Host, clIP)
 		next.ServeHTTP(resp, req)
 	})
 }
