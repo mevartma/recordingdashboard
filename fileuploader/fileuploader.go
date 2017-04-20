@@ -16,7 +16,8 @@ import (
 	"net/http"
 	"os"
 	"strings"
-	_ "time"
+	"time"
+	"flag"
 )
 
 const (
@@ -143,17 +144,38 @@ func GetAllRecording() (*[]RecordingDetails, error) {
 	return &results, err
 }
 
-func updateRecords() error {
-	fmt.Println("updateRecords")
-	/*now := time.Now()
+func updateRecords(c string) error {
+	switch c {
+	case "all":
+		rss, err := GetAllRecording()
+		s3recordings = nil
+		for _, rs := range *rss {
+			s3recordings = append(s3recordings, rs)
+			return err
+		}
+	case "date":
+		now := time.Now()
+		newDate := now.Format("2006-01-02")
+		newDate += "%"
+		rss, err := GetRecordingByDate(newDate)
+		for _, rs := range *rss {
+			s3recordings = append(s3recordings,rs)
+		}
+		return err
+	default:
+		return nil
+	}
+	return nil
+	/*fmt.Println("updateRecords")
+	now := time.Now()
 	newDate := now.Format("2006-01-02")
-	newDate += "%"*/
+	newDate += "%"
 	rss, err := GetAllRecording()
 	s3recordings = nil
 	for _, rs := range *rss {
 		s3recordings = append(s3recordings, rs)
 	}
-	return err
+	return err*/
 }
 
 func findRecord(recordDate, recordName, officeName string) string {
@@ -173,7 +195,8 @@ func findRecord(recordDate, recordName, officeName string) string {
 
 func main() {
 	fmt.Println("main")
-	err := updateRecords()
+	command := flag.String("c", "all", "all data or by day")
+	err := updateRecords(*command)
 	if err != nil {
 		log.Fatal("Faild to get data from database", err)
 		os.Exit(1)
