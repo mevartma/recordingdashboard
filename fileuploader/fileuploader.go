@@ -219,7 +219,7 @@ func main() {
 			fileURL := fmt.Sprintf("https://s3.eu-central-1.amazonaws.com/betamediarecording/%s/%s", record.Office, record.Recording_File)
 			record.S3_File_URL = fileURL
 			s3ProdRecording = append(s3ProdRecording, record)
-			fmt.Println(record.S3_File_URL, awsutil.StringValue(result.ETag))
+			fmt.Printf("%s\r\n%s\r\n",record.S3_File_URL, awsutil.StringValue(result.String()))
 		}
 	}
 
