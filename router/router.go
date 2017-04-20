@@ -183,11 +183,10 @@ func usersLogoutHandler(resp http.ResponseWriter, req *http.Request) {
 
 	_ = db.DeleteSessionId(cookie.Value)
 
-	exprDate := time.Now()
 	cookieMonster := &http.Cookie{
 		Name:    "SessionID",
-		Expires: exprDate,
 		Value:   "",
+		MaxAge: -1,
 	}
 
 	http.SetCookie(resp, cookieMonster)
@@ -195,59 +194,60 @@ func usersLogoutHandler(resp http.ResponseWriter, req *http.Request) {
 }
 
 func loggerMid(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	return http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
+		req.Close = true
 		var clIP string
-		if r.Header.Get("X-Forwarded-For") == "" {
-			clIP = r.RemoteAddr
+		if req.Header.Get("X-Forwarded-For") == "" {
+			clIP = req.RemoteAddr
 		} else {
-			clIP = r.Header.Get("X-Forwarded-For")
+			clIP = req.Header.Get("X-Forwarded-For")
 		}
 		realip := strings.Split(clIP,":")
 		clIP = realip[0]
-		uAgent := r.Header.Get("User-Agent")
+		uAgent := req.Header.Get("User-Agent")
 		log.Printf("\"Method\": \"%s\", \"User-Agent\": \"%s\", \"URL\": \"%s\", \"Host\": \"[%s]\", \"Client-IP\": \"%v\"", r.Method, uAgent, r.URL, r.Host, clIP)
-		next.ServeHTTP(w, r)
+		next.ServeHTTP(resp, req)
 	})
 }
 
 func authMid(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	return http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
 		var clIP string
-		if r.Header.Get("X-Forwarded-For") == "" {
-			clIP = r.RemoteAddr
+		if req.Header.Get("X-Forwarded-For") == "" {
+			clIP = req.RemoteAddr
 		} else {
-			clIP = r.Header.Get("X-Forwarded-For")
+			clIP = req.Header.Get("X-Forwarded-For")
 		}
 
 		realip := strings.Split(clIP,":")
 		clIP = realip[0]
 
 		if clIP == "192.168.50.14" || clIP == "192.168.150.113" {
-			next.ServeHTTP(w,r)
+			next.ServeHTTP(resp,req)
 		} else {
-			uAgent := r.Header.Get("User-Agent")
+			uAgent := req.Header.Get("User-Agent")
 
-			cookie, err := r.Cookie("SessionID")
+			cookie, err := req.Cookie("SessionID")
 			if err != nil {
-				http.Redirect(w, r, "/login", http.StatusFound)
+				http.Redirect(resp, req, "/login", http.StatusFound)
 				return
 			}
 
 			if cookie == nil {
-				http.Redirect(w, r, "/login", http.StatusFound)
+				http.Redirect(resp, req, "/login", http.StatusFound)
 				return
 			}
 
 			status, user, err := db.GetSessionId(cookie.Value)
 			if err != nil {
-				http.Redirect(w, r, "/login", http.StatusFound)
+				http.Redirect(resp, req, "/login", http.StatusFound)
 				return
 			}
 
 			if status == true && user.UserAgent == uAgent && user.IpAddress == clIP {
-				next.ServeHTTP(w, r)
+				next.ServeHTTP(resp, req)
 			} else {
-				http.Redirect(w, r, "/login", http.StatusFound)
+				http.Redirect(resp, req, "/login", http.StatusFound)
 				return
 			}
 		}
