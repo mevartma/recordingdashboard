@@ -24,7 +24,7 @@ install:
 	@if [ ! -d $(INSTALLFOLDER) ] ; then mkdir -p $(INSTALLFOLDER) ; fi
 	@mv $(EXENAME) $(INSTALLFOLDER)/recording
 	@cp -rv $(BUILDPATH)/templates $(INSTALLFOLDER)/
-	@$(INSTALLFOLDER)/recording > $(LOGFILE) &
+	@nohup $(INSTALLFOLDER)/recording > $(LOGFILE) &
 
 clean:
 	@echo "cleaning"
