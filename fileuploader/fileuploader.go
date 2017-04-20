@@ -247,10 +247,11 @@ func main() {
 			log.Fatal(err)
 		}
 		req.Header.Set("Content-Type", "application/json")
-		_, err = client.Do(req)
+		resp, err := client.Do(req)
 		if err != nil {
 			log.Fatal(err)
 		}
+		resp.Body.Close()
 	}
 
 	os.Exit(1)
