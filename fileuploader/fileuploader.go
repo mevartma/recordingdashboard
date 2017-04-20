@@ -198,41 +198,43 @@ func main() {
 			record.Disk_File_Path = DiskFilePath
 			record.Office = setting.Office
 
-			file, err := os.Open(record.Disk_File_Path)
-			if err != nil {
-				log.Println(err)
+			if _, err := os.Stat(record.Disk_File_Path); err == nil {
+				file, err := os.Open(record.Disk_File_Path)
+				if err != nil {
+					log.Println(err)
+				}
+
+				fileInfo, _ := file.Stat()
+				var size int64 = fileInfo.Size()
+				buffer := make([]byte, size)
+				file.Read(buffer)
+				fileBytes := bytes.NewReader(buffer)
+				fileType := http.DetectContentType(buffer)
+				filePath := fmt.Sprintf("/%s/%s", record.Office, record.Recording_File)
+				file.Close()
+
+				params := &s3.PutObjectInput{
+					Bucket:        bucket,
+					Key:           aws.String(filePath),
+					ACL:           aws.String("public-read"),
+					Body:          fileBytes,
+					ContentLength: aws.Int64(size),
+					ContentType:   aws.String(fileType),
+					Metadata: map[string]*string{
+						"key": aws.String("MetadataValue"),
+					},
+				}
+
+				result, err := s3Client.PutObject(params)
+				if err != nil {
+					log.Println(err)
+				}
+
+				fileURL := fmt.Sprintf("https://s3.eu-central-1.amazonaws.com/betamediarecording/%s/%s", record.Office, record.Recording_File)
+				record.S3_File_URL = fileURL
+				s3ProdRecording = append(s3ProdRecording, record)
+				fmt.Printf("%s\r\n%s\r\n", record.S3_File_URL, awsutil.StringValue(result.String()))
 			}
-
-			fileInfo, _ := file.Stat()
-			var size int64 = fileInfo.Size()
-			buffer := make([]byte, size)
-			file.Read(buffer)
-			fileBytes := bytes.NewReader(buffer)
-			fileType := http.DetectContentType(buffer)
-			filePath := fmt.Sprintf("/%s/%s", record.Office, record.Recording_File)
-			file.Close()
-
-			params := &s3.PutObjectInput{
-				Bucket:        bucket,
-				Key:           aws.String(filePath),
-				ACL:           aws.String("public-read"),
-				Body:          fileBytes,
-				ContentLength: aws.Int64(size),
-				ContentType:   aws.String(fileType),
-				Metadata: map[string]*string{
-					"key": aws.String("MetadataValue"),
-				},
-			}
-
-			result, err := s3Client.PutObject(params)
-			if err != nil {
-				log.Println(err)
-			}
-
-			fileURL := fmt.Sprintf("https://s3.eu-central-1.amazonaws.com/betamediarecording/%s/%s", record.Office, record.Recording_File)
-			record.S3_File_URL = fileURL
-			s3ProdRecording = append(s3ProdRecording, record)
-			fmt.Printf("%s\r\n%s\r\n", record.S3_File_URL, awsutil.StringValue(result.String()))
 		}
 	}
 
