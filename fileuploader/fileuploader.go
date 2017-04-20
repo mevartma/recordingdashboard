@@ -150,8 +150,8 @@ func updateRecords(c string) error {
 		s3recordings = nil
 		for _, rs := range *rss {
 			s3recordings = append(s3recordings, rs)
-			return err
 		}
+		return err
 	case "date":
 		now := time.Now()
 		newDate := now.Format("2006-01-02")
