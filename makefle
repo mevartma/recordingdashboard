@@ -16,7 +16,7 @@ get:
 
 build:
 	@echo "Start building.."
-	$(GOBUILD) $(EXENAME)
+	$(GOBUILD) $(EXENAME).go
 	@echo "Done building"
 
 install:
