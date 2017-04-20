@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"database/sql"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awsutil"
@@ -17,7 +18,6 @@ import (
 	"os"
 	"strings"
 	"time"
-	"flag"
 )
 
 const (
@@ -25,11 +25,10 @@ const (
 	server string = "mysql"
 )
 
-
 var (
-	client      = &http.Client{}
-	bucket      = aws.String("betamediarecording")
-	s3Client    *s3.S3
+	client   = &http.Client{}
+	bucket   = aws.String("betamediarecording")
+	s3Client *s3.S3
 )
 
 var s3ProdRecording []RecordingDetails
@@ -159,23 +158,13 @@ func updateRecords(c string) error {
 		newDate += "%"
 		rss, err := GetRecordingByDate(newDate)
 		for _, rs := range *rss {
-			s3recordings = append(s3recordings,rs)
+			s3recordings = append(s3recordings, rs)
 		}
 		return err
 	default:
 		return nil
 	}
 	return nil
-	/*fmt.Println("updateRecords")
-	now := time.Now()
-	newDate := now.Format("2006-01-02")
-	newDate += "%"
-	rss, err := GetAllRecording()
-	s3recordings = nil
-	for _, rs := range *rss {
-		s3recordings = append(s3recordings, rs)
-	}
-	return err*/
 }
 
 func findRecord(recordDate, recordName, officeName string) string {
@@ -196,6 +185,7 @@ func findRecord(recordDate, recordName, officeName string) string {
 func main() {
 	fmt.Println("main")
 	command := flag.String("c", "all", "all data or by day")
+	flag.Parse()
 	err := updateRecords(*command)
 	if err != nil {
 		log.Fatal("Faild to get data from database", err)
@@ -242,7 +232,7 @@ func main() {
 			fileURL := fmt.Sprintf("https://s3.eu-central-1.amazonaws.com/betamediarecording/%s/%s", record.Office, record.Recording_File)
 			record.S3_File_URL = fileURL
 			s3ProdRecording = append(s3ProdRecording, record)
-			fmt.Printf("%s\r\n%s\r\n",record.S3_File_URL, awsutil.StringValue(result.String()))
+			fmt.Printf("%s\r\n%s\r\n", record.S3_File_URL, awsutil.StringValue(result.String()))
 		}
 	}
 
@@ -252,6 +242,7 @@ func main() {
 			log.Fatal(err)
 		}
 		req, err := http.NewRequest("POST", setting.Server_URL, bytes.NewReader(js))
+		req.Close = true
 		if err != nil {
 			log.Fatal(err)
 		}
