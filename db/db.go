@@ -135,3 +135,29 @@ func GetAllRecordingsByRange(from, to int64) (*[]model.RecordingDetails, error) 
 
 	return &results, err
 }
+
+func GetllRecordingsByNumber(num string) (*[]model.RecordingDetails, error) {
+	var results []model.RecordingDetails
+	db, err := sql.Open(server, dbURL)
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	query := "SELECT id,calldate,src,dst,duration,billsec,disposition,s3fileurl,office FROM recordings WHERE src LIKE ? OR dst LIKE ?"
+	rows, err := db.Query(query,num,num)
+	if err != nil {
+		return nil, err
+	}
+
+	for rows.Next() {
+		var r model.RecordingDetails
+		err = rows.Scan(&r.Id, &r.CallDate, &r.SRC, &r.DST, &r.Duration, &r.BillSec, &r.Disposition, &r.S3FileURL, &r.Office)
+		if err != nil {
+			return nil, err
+		}
+		results = append(results, r)
+	}
+
+	return &results,err
+}

@@ -18,9 +18,11 @@ import (
 var (
 	WorkQueue   = make(chan model.RecordingDetails, 200)
 	WorkerQueue chan chan model.RecordingDetails
+	tpl *template.Template
 )
 
 func init() {
+	tpl = template.Must(template.ParseGlob("templates/*.html"))
 	startDispatcher(4)
 }
 
@@ -43,13 +45,15 @@ func fav(resp http.ResponseWriter, req *http.Request) {
 }
 
 func loginPage(resp http.ResponseWriter, req *http.Request) {
-	t, _ := template.ParseFiles("templates/login.html")
-	t.Execute(resp, nil)
+	tpl.ExecuteTemplate(resp,"login.html",nil)
+	/*t, _ := template.ParseFiles("templates/login.html")
+	t.Execute(resp, nil)*/
 }
 
 func appPage(resp http.ResponseWriter, req *http.Request) {
-	t, _ := template.ParseFiles("templates/index.html")
-	t.Execute(resp,nil)
+	tpl.ExecuteTemplate(resp,"index.html",nil)
+	/*t, _ := template.ParseFiles("templates/index.html")
+	t.Execute(resp,nil)*/
 }
 
 func home(resp http.ResponseWriter, req *http.Request) {
@@ -86,6 +90,13 @@ func recordingsHandler(resp http.ResponseWriter, req *http.Request) {
 			idRange.From = int64(tmpFrom)
 			idRange.To = int64(tmpTo)
 			rows, err = db.GetAllRecordingsByRange(idRange.From, idRange.To)
+			if err != nil {
+				resp.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+		} else if command == "number" {
+			number := req.URL.Query().Get("number")
+			rows, err = db.GetllRecordingsByNumber(number)
 			if err != nil {
 				resp.WriteHeader(http.StatusInternalServerError)
 				return
