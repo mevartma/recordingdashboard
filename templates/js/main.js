@@ -21,13 +21,6 @@ function GetDataByNumber() {
                 width: 'fit',
                 height: 'fit',
                 paging: true,
-                tbar: [{
-                    type: 'search',
-                    width: 350,
-                    emptyText: 'Search',
-                    paramsMenu: true,
-                    paramsText: 'Parameters'
-                }],
                 data: data,
                 columns:[{
                     index: 'id',
