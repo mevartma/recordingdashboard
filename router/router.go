@@ -35,16 +35,16 @@ func NewMux() http.Handler {
 	h.Handle("/api/v1/users/loginuser", loggerMid(http.HandlerFunc(usersLoginHandler)))
 	h.Handle("/api/v1/users/logoutuser", loggerMid(http.HandlerFunc(usersLogoutHandler)))
 	h.Handle("/favicon.ico", loggerMid(http.HandlerFunc(fav)))
-	h.Handle("/js", loggerMid(authMid(http.HandlerFunc(jsHandler))))
+	h.Handle("/js", loggerMid(http.HandlerFunc(jsHandler)))
 	h.Handle("/", loggerMid(http.HandlerFunc(home)))
 
 	return h
 }
 
 func jsHandler(resp http.ResponseWriter, req *http.Request) {
-	fmt.Printf("********************************************\r\n%s\r\n********************************************\r\n",req.URL.String())
+	fmt.Printf("js********************************************\r\n%s\r\n********************************************js\r\n",req.URL.String())
 	files := strings.Split(req.URL.String(),"/")
-	fmt.Printf("############################################\r\n%s\r\n############################################\r\n",files)
+	fmt.Printf("js############################################\r\n%s\r\n############################################js\r\n",files)
 }
 
 func fav(resp http.ResponseWriter, req *http.Request) {
@@ -64,6 +64,9 @@ func appPage(resp http.ResponseWriter, req *http.Request) {
 }
 
 func home(resp http.ResponseWriter, req *http.Request) {
+	fmt.Printf("home********************************************\r\n%s\r\n********************************************home\r\n",req.URL.String())
+	files := strings.Split(req.URL.String(),"/")
+	fmt.Printf("home############################################\r\n%s\r\n############################################home\r\n",files)
 	http.Redirect(resp, req, "/login", http.StatusFound)
 }
 
