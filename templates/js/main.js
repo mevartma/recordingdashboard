@@ -4,6 +4,31 @@
 
 function GetDataByNumber() {
     var number = document.getElementById("number").value;
+    console.log(number);
+    var getData = {
+        "command": "number",
+        "number": number
+    };
+
+    $.ajax({
+        url: "/api/v1/recordings",
+        type: "get",
+        data: getData,
+        success: onSuccess(response),
+        error: onError(xhr)
+    });
+}
+
+function onSuccess(data) {
+    console.log(data);
+}
+
+function onError(er) {
+    console.log(er);
+}
+
+/*function GetDataByNumber() {
+    var number = document.getElementById("number").value;
     var formData = {
         "command": "number",
         "number": number.toString()
@@ -50,7 +75,7 @@ function GetDataByNumber() {
             }
         });
     });
-}
+}*/
 
 /*$(document).ready(function (event) {
     var formData = {
