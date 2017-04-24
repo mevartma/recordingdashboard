@@ -18,48 +18,65 @@ function GetDataByNumber() {
             console.log(data);
             new FancyGrid({
                 renderTo: 'container',
+                width: 'fit',
+                height: 'fit',
+                paging: true,
+                tbar: [{
+                    type: 'search',
+                    width: 350,
+                    emptyText: 'Search',
+                    paramsMenu: true,
+                    paramsText: 'Parameters'
+                }],
                 data: data,
                 columns:[{
                     index: 'id',
                     title: 'ID',
-                    type: 'string'
+                    type: 'string',
+                    sortable: true
                 },{
                     index: 'calldate',
                     title: 'Call Date',
-                    type: 'string'
+                    type: 'string',
+                    sortable: true,
+                    flex: 1
                 },{
                     index: 'src',
                     title: 'Source',
-                    type: 'string'
+                    type: 'string',
+                    sortable: true
                 },{
                     index: 'dst',
                     title: 'Destination',
-                    type: 'string'
+                    type: 'string',
+                    sortable: true
                 },{
                     index: 'duration',
                     title: 'Duration',
-                    type: 'string'
+                    type: 'string',
+                    sortable: true
                 },{
                     index: 'billsec',
                     title: 'Actual Duration',
-                    type: 'string'
+                    type: 'string',
+                    sortable: true
                 },{
                     index: 'disposition',
                     title: 'Call Result',
-                    type: 'string'
+                    type: 'string',
+                    sortable: true
                 },{
                     index: 's_3_file_url',
                     title: 'Download',
-                    type: 'string'
+                    type: 'string',
+                    sortable: true
                 },{
                     index: 'office',
                     title: 'Office',
-                    type: 'string'
+                    type: 'string',
+                    sortable: true
                 }]
             });
-        },
-        error: function(data){
-            console.log(data);
         }
     });
 }
