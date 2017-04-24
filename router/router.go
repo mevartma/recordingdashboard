@@ -13,6 +13,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"io/ioutil"
 )
 
 var (
@@ -35,16 +36,9 @@ func NewMux() http.Handler {
 	h.Handle("/api/v1/users/loginuser", loggerMid(http.HandlerFunc(usersLoginHandler)))
 	h.Handle("/api/v1/users/logoutuser", loggerMid(http.HandlerFunc(usersLogoutHandler)))
 	h.Handle("/favicon.ico", loggerMid(http.HandlerFunc(fav)))
-	h.Handle("/js", loggerMid(http.HandlerFunc(jsHandler)))
-	h.Handle("/", loggerMid(http.HandlerFunc(home)))
+	h.Handle("/", loggerMid(http.HandlerFunc(files)))
 
 	return h
-}
-
-func jsHandler(resp http.ResponseWriter, req *http.Request) {
-	fmt.Printf("js********************************************\r\n%s\r\n********************************************js\r\n",req.URL.String())
-	files := strings.Split(req.URL.String(),"/")
-	fmt.Printf("js############################################\r\n%s\r\n############################################js\r\n",files)
 }
 
 func fav(resp http.ResponseWriter, req *http.Request) {
@@ -53,21 +47,36 @@ func fav(resp http.ResponseWriter, req *http.Request) {
 
 func loginPage(resp http.ResponseWriter, req *http.Request) {
 	tpl.ExecuteTemplate(resp,"login.html",nil)
-	/*t, _ := template.ParseFiles("templates/login.html")
-	t.Execute(resp, nil)*/
 }
 
 func appPage(resp http.ResponseWriter, req *http.Request) {
 	tpl.ExecuteTemplate(resp,"index.html",nil)
-	/*t, _ := template.ParseFiles("templates/index.html")
-	t.Execute(resp,nil)*/
 }
 
-func home(resp http.ResponseWriter, req *http.Request) {
+func files(resp http.ResponseWriter, req *http.Request) {
 	fmt.Printf("home********************************************\r\n%s\r\n********************************************home\r\n",req.URL.String())
 	files := strings.Split(req.URL.String(),"/")
 	fmt.Printf("home############################################\r\n%s\r\n############################################home\r\n",files)
-	http.Redirect(resp, req, "/login", http.StatusFound)
+	if req.URL.String() == "/" {
+		http.Redirect(resp, req, "/login", http.StatusFound)
+	}
+	filePath := fmt.Sprintf("templates%s",req.URL.String())
+	data, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		resp.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	fileExtenstion := strings.Split(filePath,".")
+	filetype := fileExtenstion[len(fileExtenstion)-1]
+	switch filetype {
+	case "js":
+		resp.Header().Set("Content-Type", "application/javascript")
+	case "css":
+		resp.Header().Set("Content-Type", "text/css")
+	}
+
+	resp.Write(data)
 }
 
 func recordingsHandler(resp http.ResponseWriter, req *http.Request) {
