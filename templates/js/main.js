@@ -16,6 +16,7 @@ function GetDataByNumber() {
         data: getData,
         success: function(data){
             console.log(data);
+            $('#recordingdata').dataTable().fnDestroy();
             $("#recordingdata").dataTable({
                 data: data,
                 "columns": [
