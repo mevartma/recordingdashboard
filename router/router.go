@@ -92,6 +92,7 @@ func files(resp http.ResponseWriter, req *http.Request) {
 
 		_, err = io.Copy(out,response.Body)
 		if err != nil {
+			fmt.Printf("Errrpr-\r\n %s \r\n", err)
 			resp.WriteHeader(http.StatusInternalServerError)
 			return
 		}
