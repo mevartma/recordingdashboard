@@ -135,7 +135,7 @@ func GetRecordingsByRange(from, to int64) (*[]model.RecordingDetails, error) {
 			return nil, err
 		}
 		tempURL := strings.Replace(r.S3FileURL,"https://s3.eu-central-1.amazonaws.com/","http://192.168.1.7/",-1)
-		tempURL2 := strings.Replace(tempURL,"gsm","mp3",-1)
+		tempURL2 := strings.Replace(tempURL,"gsm","wav",-1)
 		r.S3FileURL = tempURL2
 		results = append(results, r)
 	}

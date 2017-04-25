@@ -16,65 +16,26 @@ function GetDataByNumber() {
         data: getData,
         success: function(data){
             console.log(data);
-            new FancyGrid({
-                renderTo: 'container',
-                width: 'fit',
-                height: 'fit',
-                paging: true,
-                tbar: [{
-                    type: 'search',
-                    width: 350,
-                    emptyText: 'Search',
-                    paramsMenu: true,
-                    paramsText: 'Parameters'
-                }],
+            $("#recordingdata").dataTable({
                 data: data,
-                columns:[{
-                    index: 'id',
-                    title: 'ID',
-                    type: 'string',
-                    sortable: true
-                },{
-                    index: 'calldate',
-                    title: 'Call Date',
-                    type: 'string',
-                    sortable: true
-                },{
-                    index: 'src',
-                    title: 'Source',
-                    type: 'string',
-                    sortable: true
-                },{
-                    index: 'dst',
-                    title: 'Destination',
-                    type: 'string',
-                    sortable: true
-                },{
-                    index: 'duration',
-                    title: 'Duration',
-                    type: 'string',
-                    sortable: true
-                },{
-                    index: 'billsec',
-                    title: 'Actual Duration',
-                    type: 'string',
-                    sortable: true
-                },{
-                    index: 'disposition',
-                    title: 'Call Result',
-                    type: 'string',
-                    sortable: true
-                },{
-                    index: 's_3_file_url',
-                    title: 'Download',
-                    type: 'string',
-                    sortable: true
-                },{
-                    index: 'office',
-                    title: 'Office',
-                    type: 'string',
-                    sortable: true
-                }]
+                "columns": [
+                    { "data": "id", "orderable" : true },
+                    { "data": "calldate", "orderable" : true },
+                    { "data": "src", "orderable" : true },
+                    { "data": "dst", "orderable" : true },
+                    { "data": "duration" },
+                    { "data": "billsec" },
+                    { "data": "disposition", "orderable" : true },
+                    { "render": function(data,type,full,meta){
+                        if(full.disposition == "NO ANSWER"){
+                            return '<lable>NO File</lable>';
+                        } else {
+                            return '<audio controls><source src="'+full.s_3_file_url+'" type="audio/wav" preload="none"></audio>';
+                            //return '<a href="'+full.s_3_file_url+'">Download</a>';
+                        }
+                    }},
+                    { "data": "office", "orderable" : true },
+                ]
             });
         }
     });
