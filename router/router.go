@@ -54,12 +54,13 @@ func appPage(resp http.ResponseWriter, req *http.Request) {
 }
 
 func files(resp http.ResponseWriter, req *http.Request) {
-	fmt.Printf("home********************************************\r\n%s\r\n********************************************home\r\n",req.URL.String())
-	files := strings.Split(req.URL.String(),"/")
-	fmt.Printf("home############################################\r\n%s\r\n############################################home\r\n",files)
 	if req.URL.String() == "/" {
 		http.Redirect(resp, req, "/login", http.StatusFound)
+	} else if strings.Contains(req.URL.String(), "betamediarecording") {
+		newURL := fmt.Sprintf("https://s3.eu-central-1.amazonaws.com%s",req.URL.String())
+		fmt.Printf("--------------------------------------\r\n%s\r\n--------------------------------------",newURL)
 	}
+
 	filePath := fmt.Sprintf("templates%s",req.URL.String())
 	data, err := ioutil.ReadFile(filePath)
 	if err != nil {
@@ -74,6 +75,8 @@ func files(resp http.ResponseWriter, req *http.Request) {
 		resp.Header().Set("Content-Type", "application/javascript")
 	case "css":
 		resp.Header().Set("Content-Type", "text/css")
+	case "mp3":
+		resp.Header().Set("Content-Type", "audio/mpeg3;audio/x-mpeg-3;video/mpeg;video/x-mpeg;text/xml")
 	}
 
 	resp.Write(data)
@@ -108,14 +111,14 @@ func recordingsHandler(resp http.ResponseWriter, req *http.Request) {
 			tmpTo, err := strconv.Atoi(req.URL.Query().Get("to"))
 			idRange.From = int64(tmpFrom)
 			idRange.To = int64(tmpTo)
-			rows, err = db.GetAllRecordingsByRange(idRange.From, idRange.To)
+			rows, err = db.GetRecordingsByRange(idRange.From, idRange.To)
 			if err != nil {
 				resp.WriteHeader(http.StatusInternalServerError)
 				return
 			}
 		} else if command == "number" {
 			number := req.URL.Query().Get("number")
-			rows, err = db.GetllRecordingsByNumber(number)
+			rows, err = db.GetRecordingsByNumber(number)
 			if err != nil {
 				resp.WriteHeader(http.StatusInternalServerError)
 				return
