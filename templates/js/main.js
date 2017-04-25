@@ -30,7 +30,7 @@ function GetDataByNumber() {
                         if(full.disposition == "NO ANSWER"){
                             return '<lable>NO File</lable>';
                         } else {
-                            return '<audio controls><source src="'+full.s_3_file_url+'" type="audio/wav" preload="none"></audio>';
+                            return '<audio controls><source src="'+full.s_3_file_url+'" type="audio/mpeg"></audio>';
                             //return '<a href="'+full.s_3_file_url+'">Download</a>';
                         }
                     }},

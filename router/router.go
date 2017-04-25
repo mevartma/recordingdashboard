@@ -64,23 +64,30 @@ func files(resp http.ResponseWriter, req *http.Request) {
 		http.Redirect(resp, req, "/login", http.StatusFound)
 	} else if strings.Contains(req.URL.String(), "betamediarecording") {
 		tempURL := fmt.Sprintf("https://s3.eu-central-1.amazonaws.com%s",req.URL.String())
-		amazonURL := strings.Replace(tempURL,"wav","gsm",-1)
-		fmt.Printf("--------------------------------------\r\n%s\r\n--------------------------------------",amazonURL)
+		amazonURL := strings.Replace(tempURL,"mp3","gsm",-1)
 
 		splitFolder := strings.Split(req.URL.String(),"/")
-		folderPath := fmt.Sprintf("temp/%s/%s",splitFolder[0],splitFolder[1])
+		folderPath := fmt.Sprintf("temp%s/%s",splitFolder[0],splitFolder[1])
+
 		if _, err = os.Stat(folderPath); os.IsNotExist(err) {
 			os.MkdirAll(folderPath,os.ModePerm)
 		}
 
-		response, err := http.Get(amazonURL)
+
+		check := http.Client{
+			CheckRedirect: func(req *http.Request, via []*http.Request) error {
+				req.URL.Opaque = req.URL.Path
+				return nil
+			},
+		}
+
+		response, err := check.Get(amazonURL)
 		if err != nil {
 			resp.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 		defer response.Body.Close()
-
-		fileName := strings.Replace(splitFolder[len(splitFolder)-1],"wav","gsm",-1)
+		fileName := strings.Replace(splitFolder[len(splitFolder)-1],"mp3","gsm",-1)
 		newFileName := fmt.Sprintf("%s/%s",folderPath,splitFolder[len(splitFolder)-1])
 
 		filePath := fmt.Sprintf("%s/%s",folderPath,fileName)
@@ -92,16 +99,16 @@ func files(resp http.ResponseWriter, req *http.Request) {
 
 		_, err = io.Copy(out,response.Body)
 		if err != nil {
-			fmt.Printf("Errrpr-\r\n %s \r\n", err)
 			resp.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 		out.Close()
 
 		cmdName := "sox"
-		cmdArgs := []string{filePath,"-s",newFileName}
-
-		if _, err = exec.Command(cmdName,cmdArgs...).Output(); err != nil {
+		ConvertCommand := exec.Command(cmdName, filePath, "-S", newFileName)
+		_, err = ConvertCommand.CombinedOutput()
+		if err != nil {
+			fmt.Println(err)
 			resp.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -111,7 +118,7 @@ func files(resp http.ResponseWriter, req *http.Request) {
 			resp.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		filetype = "wav"
+		filetype = "mp3"
 	} else {
 		filePath := fmt.Sprintf("templates%s", req.URL.String())
 		data, err = ioutil.ReadFile(filePath)
@@ -129,8 +136,8 @@ func files(resp http.ResponseWriter, req *http.Request) {
 		resp.Header().Set("Content-Type", "application/javascript")
 	case "css":
 		resp.Header().Set("Content-Type", "text/css")
-	case "wav":
-		resp.Header().Set("Content-Type", "audio/wav")
+	case "mp3":
+		resp.Header().Set("Content-Type", "audio/mpeg;audio/mpeg3;audio/x-mpeg-3;video/mpeg;video/x-mpeg;text/xml")
 	}
 
 	resp.Write(data)
