@@ -73,7 +73,6 @@ func files(resp http.ResponseWriter, req *http.Request) {
 			os.MkdirAll(folderPath,os.ModePerm)
 		}
 
-
 		check := http.Client{
 			CheckRedirect: func(req *http.Request, via []*http.Request) error {
 				req.URL.Opaque = req.URL.Path

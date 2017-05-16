@@ -54,6 +54,30 @@ func GetSessionId(s string) (bool, *model.UserDetails, error) {
 	return false, &results, err
 }
 
+func GetAllSessions() (*[]model.UserDetails, error) {
+	var err error
+	var result []model.UserDetails
+
+	db, err := sql.Open(server, dbURL)
+	defer db.Close()
+	query := "SELECT * FROM userssessions"
+	rows, err := db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+
+	for rows.Next() {
+		var r model.UserDetails
+		err = rows.Scan(&r.Id, &r.UserName, &r.IpAddress, &r.UserAgent, &r.Cookie, &r.ExpireTime)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result,r)
+	}
+
+	return &result,err
+}
+
 func DeleteSessionId(s string) error {
 	db, err := sql.Open(server, dbURL)
 	if err != nil {

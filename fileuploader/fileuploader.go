@@ -223,7 +223,7 @@ func main() {
 			record.Office = setting.Office
 
 			if _, err := os.Stat(record.Disk_File_Path); err == nil {
-				file, err := os.Open(record.Disk_File_Path)
+				/*file, err := os.Open(record.Disk_File_Path)
 				if err != nil {
 					log.Println(err)
 				}
@@ -252,12 +252,12 @@ func main() {
 				result, err := s3Client.PutObject(params)
 				if err != nil {
 					log.Println(err)
-				}
+				}*/
 
 				fileURL := fmt.Sprintf("https://s3.eu-central-1.amazonaws.com/betamediarecording/%s/%s", record.Office, record.Recording_File)
 				record.S3_File_URL = fileURL
-				s3ProdRecording = append(s3ProdRecording, record)
-				fmt.Printf("%s\r\n%s\r\n", record.S3_File_URL, awsutil.StringValue(result.String()))
+				/*s3ProdRecording = append(s3ProdRecording, record)*/
+				fmt.Printf("%s\r\n", record.S3_File_URL)
 			}
 		}
 	}

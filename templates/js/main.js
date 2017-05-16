@@ -15,7 +15,6 @@ function GetDataByNumber() {
         type: "get",
         data: getData,
         success: function(data){
-            console.log(data);
             $('#recordingdata').dataTable().fnDestroy();
             $("#recordingdata").dataTable({
                 data: data,
@@ -32,7 +31,6 @@ function GetDataByNumber() {
                             return '<lable>NO File</lable>';
                         } else {
                             return '<audio controls><source src="'+full.s_3_file_url+'" type="audio/mpeg"></audio>';
-                            //return '<a href="'+full.s_3_file_url+'">Download</a>';
                         }
                     }},
                     { "data": "office", "orderable" : true },

@@ -10,6 +10,7 @@ import (
 	"time"
 	"fmt"
 	"crypto/sha1"
+	"RecordingDashboard/db"
 )
 
 var httpClient = http.Client{}
@@ -92,4 +93,20 @@ func CreateSessionCoockie(toHash string, t time.Time) string {
 
 	sha512String := hex.EncodeToString(h.Sum(nil))
 	return sha512String
+}
+
+func CleanSessions() (bool, error) {
+	sessions, err := db.GetAllSessions()
+	if err != nil {
+		return false,err
+	}
+
+	for _, sess := range *sessions {
+		err := db.DeleteSessionId(sess.Cookie)
+		if err != nil {
+			return false,err
+		}
+	}
+
+	return true, nil
 }

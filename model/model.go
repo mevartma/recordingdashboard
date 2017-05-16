@@ -49,11 +49,3 @@ type UserDetails struct {
 	Cookie     string
 	ExpireTime string
 }
-
-/*type UserDetails struct {
-	Id       int64  `json:"id"`
-	UserName string `json:"user_name"`
-	Password string `json:"password"`
-	Email    string `json:"email"`
-	Role     string `json:"role"`
-}*/
