@@ -1,6 +1,6 @@
 package model
 
-type RecordingDetails struct {
+/*type RecordingDetails struct {
 	Id            int64  `json:"id"`
 	CallDate      string `json:"calldate"`
 	ClId          string `json:"clid"`
@@ -15,6 +15,22 @@ type RecordingDetails struct {
 	RecordingFile string `json:"recordingfile"`
 	DiskFilePath  string `json:"disk_file_path"`
 	S3FileURL     string `json:"s_3_file_url"`
+	Office        string `json:"office"`
+}*/
+
+type RecordingDetails struct {
+	UniqueId      string `json:"unique_id"`
+	CallDate      string `json:"call_date"`
+	ClId          string `json:"cl_id"`
+	SRC           string `json:"src"`
+	DST           string `json:"dst"`
+	Duration      string `json:"duration"`
+	BillSec       string `json:"billsec"`
+	Disposition   string `json:"disposition"`
+	Cnam          string `json:"cnam"`
+	RecordingFile string `json:"recordingfile"`
+	FileURL       string `json:"s_3_file_url"`
+	ServerURL     string `json:"server_url"`
 	Office        string `json:"office"`
 }
 

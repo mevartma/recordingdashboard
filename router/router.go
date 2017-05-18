@@ -10,7 +10,6 @@ import (
 	"html/template"
 	"log"
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
 	"os"
@@ -163,13 +162,15 @@ func recordingsHandler(resp http.ResponseWriter, req *http.Request) {
 		command := req.URL.Query().Get("command")
 		var rows *[]model.RecordingDetails
 		if command == "all" {
-			rows, err = db.GetAllRecordings()
+			/*rows, err = db.GetAllRecordings()
 			if err != nil {
 				resp.WriteHeader(http.StatusInternalServerError)
 				return
-			}
+			}*/
+			return
 		} else if command == "range" {
-			var idRange model.RecordingSetting
+			return
+			/*var idRange model.RecordingSetting
 			tmpFrom, err := strconv.Atoi(req.URL.Query().Get("from"))
 			tmpTo, err := strconv.Atoi(req.URL.Query().Get("to"))
 			idRange.From = int64(tmpFrom)
@@ -178,10 +179,13 @@ func recordingsHandler(resp http.ResponseWriter, req *http.Request) {
 			if err != nil {
 				resp.WriteHeader(http.StatusInternalServerError)
 				return
-			}
+			}*/
 		} else if command == "number" {
 			number := req.URL.Query().Get("number")
-			rows, err = db.GetRecordingsByNumber(number)
+			date1 := req.URL.Query().Get("date1")
+			date2 := req.URL.Query().Get("date2")
+			office := req.URL.Query().Get("office")
+			rows, err = db.GetRecording(number,date1,date2,office)
 			if err != nil {
 				resp.WriteHeader(http.StatusInternalServerError)
 				return

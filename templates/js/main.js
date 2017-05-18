@@ -4,10 +4,16 @@
 
 function GetDataByNumber() {
     var number = document.getElementById("number").value;
-    console.log(number);
+    var date1 = document.getElementById("date1").value;
+    var date2 = document.getElementById("date2").value;
+    var office = document.getElementById("office").value;
+    console.log(number,date1,date2,office);
     var getData = {
         "command": "number",
-        "number": number
+        "number": number,
+        "date1": date1,
+        "date2": date2,
+        "office": office
     };
 
     $.ajax({
@@ -20,7 +26,7 @@ function GetDataByNumber() {
                 data: data,
                 "columns": [
                     { "data": "calldate", "orderable" : true },
-                    { "data": "clid", "orderable" : true },
+                    { "data": "cnam", "orderable" : true },
                     { "data": "src", "orderable" : true },
                     { "data": "dst", "orderable" : true },
                     { "data": "billsec" },
@@ -29,7 +35,7 @@ function GetDataByNumber() {
                         if(full.disposition == "NO ANSWER"){
                             return '<lable>NO File</lable>';
                         } else {
-                            return '<audio controls preload="none"><source src="'+full.s_3_file_url+'" type="audio/mpeg"></audio>';
+                            return '<audio controls preload="none"><source src="'+full.server_url+'" type="audio/mpeg"></audio>';
                         }
                     }},
                     { "data": "office", "orderable" : true },
