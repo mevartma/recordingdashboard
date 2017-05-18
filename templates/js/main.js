@@ -19,12 +19,10 @@ function GetDataByNumber() {
             $("#recordingdata").dataTable({
                 data: data,
                 "columns": [
-                    { "data": "id", "orderable" : true },
                     { "data": "calldate", "orderable" : true },
                     { "data": "clid", "orderable" : true },
                     { "data": "src", "orderable" : true },
                     { "data": "dst", "orderable" : true },
-                    { "data": "duration" },
                     { "data": "billsec" },
                     { "data": "disposition", "orderable" : true },
                     { "render": function(data,type,full,meta){
@@ -37,7 +35,7 @@ function GetDataByNumber() {
                     { "data": "office", "orderable" : true },
                 ]
             });
-            $("#recordingdata thead th").each(function () {
+            /*$("#recordingdata thead th").each(function () {
                 var title = $(this).text();
                 $(this).html( '<input type="text" placeholder="Search '+title+'" />' );
             });
@@ -51,7 +49,7 @@ function GetDataByNumber() {
                         that.search(this.value).draw();
                     }
                 });
-            });
+            });*/
         }
     });
 }

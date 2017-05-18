@@ -17,14 +17,24 @@ get:
 build:
 	@echo "Start building.."
 	$(GOBUILD) $(EXENAME).go
-	@echo "Done building"
+    @echo "Done building"
 
 install:
-	@echo "Start to install service"
-	@if [ ! -d $(INSTALLFOLDER) ] ; then mkdir -p $(INSTALLFOLDER) ; fi
-	@mv $(EXENAME) $(INSTALLFOLDER)/recording
-	@cp -rv $(BUILDPATH)/templates $(INSTALLFOLDER)/
-	@nohup $(INSTALLFOLDER)/recording > $(LOGFILE) &
+    @echo "Start to install service"
+    @echo "Delets old files"
+    @rm -Rvf $(INSTALLFOLDER)
+    @rm -Rvf $(LOGFILE)
+    @echo "Start Creating folders"
+    @if [ ! -d $(INSTALLFOLDER) ] ; then mkdir -p $(INSTALLFOLDER) ; fi
+    @if [ ! -d $(INSTALLFOLDER)/temp ] ; then mkdir -p $(INSTALLFOLDER)/tmep ; fi
+    @touch $(LOGFILE)
+    @echo "Finish Creating folders"
+    @echo "Start Coping files"
+    @mv $(EXENAME) $(INSTALLFOLDER)/recording
+    @cp -Rvf $(BUILDPATH)/templates $(INSTALLFOLDER)/
+    @echo "Finish Coping files"
+    @cd $(INSTALLFOLDER)/
+    @nohup ./recording > $(LOGFILE) &
 
 clean:
 	@echo "cleaning"
