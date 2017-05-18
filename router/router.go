@@ -119,8 +119,8 @@ func files(resp http.ResponseWriter, req *http.Request) {
 		}
 		filetype = "mp3"
 
-		os.Remove(filePath)
-		os.Remove(newFileName)
+		/*os.Remove(filePath)
+		os.Remove(newFileName)*/
 	} else {
 		filePath := fmt.Sprintf("templates%s", req.URL.String())
 		data, err = ioutil.ReadFile(filePath)

@@ -7,7 +7,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awsutil"
+	_ "github.com/aws/aws-sdk-go/aws/awsutil"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
@@ -99,7 +99,7 @@ func GetRecordingByDate(date string) (*[]RecordingDetails, error) {
 	}
 	defer db.Close()
 
-	query := "SELECT calldate,clid,src,dst,duration,billsec,disposition,accountcode,uniqueid,did,recordingfile FROM cdr WHERE calldate like ?"
+	query := "SELECT calldate,clid,src,dst,duration,billsec,disposition,accouevratmevratntcode,uniqueid,did,recordingfile FROM cdr WHERE calldate like ?"
 	rows, err := db.Query(query, date)
 	if err != nil {
 		return &results, err
@@ -256,7 +256,7 @@ func main() {
 
 				fileURL := fmt.Sprintf("https://s3.eu-central-1.amazonaws.com/betamediarecording/%s/%s", record.Office, record.Recording_File)
 				record.S3_File_URL = fileURL
-				/*s3ProdRecording = append(s3ProdRecording, record)*/
+				s3ProdRecording = append(s3ProdRecording, record)
 				fmt.Printf("%s\r\n", record.S3_File_URL)
 			}
 		}
@@ -277,6 +277,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
+		fmt.Println(resp.StatusCode)
 		resp.Body.Close()
 	}
 

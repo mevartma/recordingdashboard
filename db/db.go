@@ -117,7 +117,7 @@ func GetAllRecordings() (*[]model.RecordingDetails, error) {
 	}
 	defer db.Close()
 
-	query := "SELECT id,calldate,src,dst,duration,billsec,disposition,s3fileurl,office FROM recordings"
+	query := "SELECT id,calldate,clid,src,dst,duration,billsec,disposition,s3fileurl,office FROM recordings"
 	rows, err := db.Query(query)
 	if err != nil {
 		return nil, err
@@ -125,14 +125,16 @@ func GetAllRecordings() (*[]model.RecordingDetails, error) {
 
 	for rows.Next() {
 		var r model.RecordingDetails
-		err = rows.Scan(&r.Id, &r.CallDate, &r.SRC, &r.DST, &r.Duration, &r.BillSec, &r.Disposition, &r.S3FileURL, &r.Office)
+		err = rows.Scan(&r.Id, &r.CallDate, &r.ClId, &r.SRC, &r.DST, &r.Duration, &r.BillSec, &r.Disposition, &r.S3FileURL, &r.Office)
 		if err != nil {
 			return nil, err
 		}
-		tempURL := strings.Replace(r.S3FileURL,"https://s3.eu-central-1.amazonaws.com/","http://192.168.1.7/",-1)
-		tempURL2 := strings.Replace(tempURL,"gsm","mp3",-1)
-		r.S3FileURL = tempURL2
-		results = append(results, r)
+		if r.Disposition != "NO ANSWER" {
+			tempURL := strings.Replace(r.S3FileURL, "https://s3.eu-central-1.amazonaws.com/", "http://192.168.1.7/", -1)
+			tempURL2 := strings.Replace(tempURL, "gsm", "mp3", -1)
+			r.S3FileURL = tempURL2
+			results = append(results, r)
+		}
 	}
 
 	return &results, err
@@ -146,7 +148,7 @@ func GetRecordingsByRange(from, to int64) (*[]model.RecordingDetails, error) {
 	}
 	defer db.Close()
 
-	query := "SELECT id,calldate,src,dst,duration,billsec,disposition,s3fileurl,office FROM recordings WHERE id BETWEEN ? AND ?"
+	query := "SELECT id,calldate,clid,src,dst,duration,billsec,disposition,s3fileurl,office FROM recordings WHERE id BETWEEN ? AND ?"
 	rows, err := db.Query(query, from, to)
 	if err != nil {
 		return nil, err
@@ -154,14 +156,16 @@ func GetRecordingsByRange(from, to int64) (*[]model.RecordingDetails, error) {
 
 	for rows.Next() {
 		var r model.RecordingDetails
-		err = rows.Scan(&r.Id, &r.CallDate, &r.SRC, &r.DST, &r.Duration, &r.BillSec, &r.Disposition, &r.S3FileURL, &r.Office)
+		err = rows.Scan(&r.Id, &r.CallDate, &r.ClId, &r.SRC, &r.DST, &r.Duration, &r.BillSec, &r.Disposition, &r.S3FileURL, &r.Office)
 		if err != nil {
 			return nil, err
 		}
-		tempURL := strings.Replace(r.S3FileURL,"https://s3.eu-central-1.amazonaws.com/","http://192.168.1.7/",-1)
-		tempURL2 := strings.Replace(tempURL,"gsm","mp3",-1)
-		r.S3FileURL = tempURL2
-		results = append(results, r)
+		if r.Disposition != "NO ANSWER" {
+			tempURL := strings.Replace(r.S3FileURL, "https://s3.eu-central-1.amazonaws.com/", "http://192.168.1.7/", -1)
+			tempURL2 := strings.Replace(tempURL, "gsm", "mp3", -1)
+			r.S3FileURL = tempURL2
+			results = append(results, r)
+		}
 	}
 
 	return &results, err
@@ -175,7 +179,7 @@ func GetRecordingsByNumber(num string) (*[]model.RecordingDetails, error) {
 	}
 	defer db.Close()
 
-	query := "SELECT id,calldate,src,dst,duration,billsec,disposition,s3fileurl,office FROM recordings WHERE src LIKE ? OR dst LIKE ?"
+	query := "SELECT id,calldate,clid,src,dst,duration,billsec,disposition,s3fileurl,office FROM recordings WHERE src LIKE ? OR dst LIKE ?"
 	rows, err := db.Query(query,num,num)
 	if err != nil {
 		return nil, err
@@ -183,14 +187,16 @@ func GetRecordingsByNumber(num string) (*[]model.RecordingDetails, error) {
 
 	for rows.Next() {
 		var r model.RecordingDetails
-		err = rows.Scan(&r.Id, &r.CallDate, &r.SRC, &r.DST, &r.Duration, &r.BillSec, &r.Disposition, &r.S3FileURL, &r.Office)
+		err = rows.Scan(&r.Id, &r.CallDate, &r.ClId, &r.SRC, &r.DST, &r.Duration, &r.BillSec, &r.Disposition, &r.S3FileURL, &r.Office)
 		if err != nil {
 			return nil, err
 		}
-		tempURL := strings.Replace(r.S3FileURL,"https://s3.eu-central-1.amazonaws.com/","http://192.168.1.7/",-1)
-		tempURL2 := strings.Replace(tempURL,"gsm","mp3",-1)
-		r.S3FileURL = tempURL2
-		results = append(results, r)
+		if r.Disposition != "NO ANSWER" {
+			tempURL := strings.Replace(r.S3FileURL, "https://s3.eu-central-1.amazonaws.com/", "http://192.168.1.7/", -1)
+			tempURL2 := strings.Replace(tempURL, "gsm", "mp3", -1)
+			r.S3FileURL = tempURL2
+			results = append(results, r)
+		}
 	}
 
 	return &results,err

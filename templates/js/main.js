@@ -21,6 +21,7 @@ function GetDataByNumber() {
                 "columns": [
                     { "data": "id", "orderable" : true },
                     { "data": "calldate", "orderable" : true },
+                    { "data": "clid", "orderable" : true },
                     { "data": "src", "orderable" : true },
                     { "data": "dst", "orderable" : true },
                     { "data": "duration" },
@@ -30,11 +31,26 @@ function GetDataByNumber() {
                         if(full.disposition == "NO ANSWER"){
                             return '<lable>NO File</lable>';
                         } else {
-                            return '<audio controls><source src="'+full.s_3_file_url+'" type="audio/mpeg"></audio>';
+                            return '<audio controls preload="none"><source src="'+full.s_3_file_url+'" type="audio/mpeg"></audio>';
                         }
                     }},
                     { "data": "office", "orderable" : true },
                 ]
+            });
+            $("#recordingdata thead th").each(function () {
+                var title = $(this).text();
+                $(this).html( '<input type="text" placeholder="Search '+title+'" />' );
+            });
+
+            var table = $("#recordingdata").dataTable();
+
+            table.api().columns().every(function () {
+                var that = this;
+                $('input', this.footer()).on('keyup change', function () {
+                    if (that.search() !== this.value ) {
+                        that.search(this.value).draw();
+                    }
+                });
             });
         }
     });
