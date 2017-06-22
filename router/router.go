@@ -5,30 +5,23 @@ import (
 	"RecordingDashboard/model"
 	"RecordingDashboard/utils"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"html/template"
-	"log"
-	"net/http"
-	"strings"
-	"time"
-	"os"
 	"io"
 	"io/ioutil"
+	"log"
+	"net/http"
+	"os"
 	"os/exec"
+	"strings"
+	"time"
 )
 
-var (
-	WorkQueue   = make(chan model.RecordingDetails, 200)
-	WorkerQueue chan chan model.RecordingDetails
-	tpl *template.Template
-)
+var tpl *template.Template
 
 func init() {
 	tpl = template.Must(template.ParseGlob("templates/*.html"))
-	startDispatcher(4)
 }
-
 
 func NewMux() http.Handler {
 	h := http.NewServeMux()
@@ -48,28 +41,28 @@ func fav(resp http.ResponseWriter, req *http.Request) {
 }
 
 func loginPage(resp http.ResponseWriter, req *http.Request) {
-	tpl.ExecuteTemplate(resp,"login.html",nil)
+	tpl.ExecuteTemplate(resp, "login.html", nil)
 }
 
 func appPage(resp http.ResponseWriter, req *http.Request) {
-	tpl.ExecuteTemplate(resp,"index.html",nil)
+	tpl.ExecuteTemplate(resp, "index.html", nil)
 }
 
 func files(resp http.ResponseWriter, req *http.Request) {
 	var data []byte
 	var err error
-	var filetype string
+	var fileType string
 	if req.URL.String() == "/" {
 		http.Redirect(resp, req, "/login", http.StatusFound)
 	} else if strings.Contains(req.URL.String(), "betamediarecording") {
-		tempURL := fmt.Sprintf("https://s3.eu-central-1.amazonaws.com%s",req.URL.String())
-		amazonURL := strings.Replace(tempURL,"mp3","gsm",-1)
+		tempURL := fmt.Sprintf("https://s3.eu-central-1.amazonaws.com%s", req.URL.String())
+		amazonURL := strings.Replace(tempURL, "mp3", "gsm", -1)
 
-		splitFolder := strings.Split(req.URL.String(),"/")
-		folderPath := fmt.Sprintf("temp%s/%s",splitFolder[0],splitFolder[1])
+		splitFolder := strings.Split(req.URL.String(), "/")
+		folderPath := fmt.Sprintf("temp%s/%s", splitFolder[0], splitFolder[1])
 
 		if _, err = os.Stat(folderPath); os.IsNotExist(err) {
-			os.MkdirAll(folderPath,os.ModePerm)
+			os.MkdirAll(folderPath, os.ModePerm)
 		}
 
 		check := http.Client{
@@ -85,17 +78,17 @@ func files(resp http.ResponseWriter, req *http.Request) {
 			return
 		}
 		defer response.Body.Close()
-		fileName := strings.Replace(splitFolder[len(splitFolder)-1],"mp3","gsm",-1)
-		newFileName := fmt.Sprintf("%s/%s",folderPath,splitFolder[len(splitFolder)-1])
+		fileName := strings.Replace(splitFolder[len(splitFolder)-1], "mp3", "gsm", -1)
+		newFileName := fmt.Sprintf("%s/%s", folderPath, splitFolder[len(splitFolder)-1])
 
-		filePath := fmt.Sprintf("%s/%s",folderPath,fileName)
+		filePath := fmt.Sprintf("%s/%s", folderPath, fileName)
 		out, err := os.Create(filePath)
 		if err != nil {
 			resp.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 
-		_, err = io.Copy(out,response.Body)
+		_, err = io.Copy(out, response.Body)
 		if err != nil {
 			resp.WriteHeader(http.StatusInternalServerError)
 			return
@@ -116,7 +109,7 @@ func files(resp http.ResponseWriter, req *http.Request) {
 			resp.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		filetype = "mp3"
+		fileType = "mp3"
 
 		/*os.Remove(filePath)
 		os.Remove(newFileName)*/
@@ -127,12 +120,11 @@ func files(resp http.ResponseWriter, req *http.Request) {
 			resp.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		fileExt := strings.Split(filePath,".")
-		filetype = fileExt[len(fileExt)-1]
+		fileExt := strings.Split(filePath, ".")
+		fileType = fileExt[len(fileExt)-1]
 	}
 
-
-	switch filetype {
+	switch fileType {
 	case "js":
 		resp.Header().Set("Content-Type", "application/javascript")
 	case "css":
@@ -156,47 +148,34 @@ func recordingsHandler(resp http.ResponseWriter, req *http.Request) {
 			resp.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		//err = db.UpdateRecording(r, "add")
-		WorkQueue <- r
 	case "GET":
 		command := req.URL.Query().Get("command")
 		var rows *[]model.RecordingDetails
-		if command == "all" {
-			/*rows, err = db.GetAllRecordings()
-			if err != nil {
-				resp.WriteHeader(http.StatusInternalServerError)
-				return
-			}*/
-			return
-		} else if command == "range" {
-			return
-			/*var idRange model.RecordingSetting
-			tmpFrom, err := strconv.Atoi(req.URL.Query().Get("from"))
-			tmpTo, err := strconv.Atoi(req.URL.Query().Get("to"))
-			idRange.From = int64(tmpFrom)
-			idRange.To = int64(tmpTo)
-			rows, err = db.GetRecordingsByRange(idRange.From, idRange.To)
-			if err != nil {
-				resp.WriteHeader(http.StatusInternalServerError)
-				return
-			}*/
-		} else if command == "number" {
+		switch command {
+		case "number":
 			number := req.URL.Query().Get("number")
 			date1 := req.URL.Query().Get("date1")
-			date2 := req.URL.Query().Get("date2")
+			date2 := req.URL.Query().Get("date1")
 			office := req.URL.Query().Get("office")
-			rows, err = db.GetRecording(number,date1,date2,office)
+			if number == "" || date1 == "" || date2 == "" || office == "" {
+				http.Error(resp, "missing details", http.StatusBadRequest)
+			}
+			rows, err = db.GetRecording(number, date1, date2, office)
 			if err != nil {
 				resp.WriteHeader(http.StatusInternalServerError)
 				return
 			}
+		default:
+			http.Error(resp, "Command not found", http.StatusUnauthorized)
+			return
 		}
 
 		for _, rs := range *rows {
 			results = append(results, rs)
 		}
 	default:
-		err = errors.New("Method Not Allow")
+		http.Error(resp, "Command not found", http.StatusUnauthorized)
+		return
 	}
 
 	if err != nil {
@@ -246,8 +225,8 @@ func usersLoginHandler(resp http.ResponseWriter, req *http.Request) {
 		clIP = req.Header.Get("X-Forwarded-For")
 	}
 
-	realip := strings.Split(clIP,":")
-	clIP = realip[0]
+	realIP := strings.Split(clIP, ":")
+	clIP = realIP[0]
 
 	realUser.UserName = user.Username
 	realUser.IpAddress = clIP
@@ -284,8 +263,8 @@ func usersLogoutHandler(resp http.ResponseWriter, req *http.Request) {
 	_ = db.DeleteSessionId(cookie.Value)
 
 	cookieMonster := &http.Cookie{
-		Name:    "SessionID",
-		Value:   "",
+		Name:   "SessionID",
+		Value:  "",
 		MaxAge: -1,
 	}
 
@@ -302,7 +281,7 @@ func loggerMid(next http.Handler) http.Handler {
 		} else {
 			clIP = req.Header.Get("X-Forwarded-For")
 		}
-		realip := strings.Split(clIP,":")
+		realip := strings.Split(clIP, ":")
 		clIP = realip[0]
 		uAgent := req.Header.Get("User-Agent")
 		log.Printf("\"Method\": \"%s\", \"User-Agent\": \"%s\", \"URL\": \"%s\", \"Host\": \"[%s]\", \"Client-IP\": \"%v\"", req.Method, uAgent, req.URL, req.Host, clIP)
@@ -319,11 +298,11 @@ func authMid(next http.Handler) http.Handler {
 			clIP = req.Header.Get("X-Forwarded-For")
 		}
 
-		realip := strings.Split(clIP,":")
+		realip := strings.Split(clIP, ":")
 		clIP = realip[0]
 
 		if clIP == "192.168.50.14" || clIP == "192.168.150.113" {
-			next.ServeHTTP(resp,req)
+			next.ServeHTTP(resp, req)
 		} else {
 			uAgent := req.Header.Get("User-Agent")
 
@@ -353,69 +332,3 @@ func authMid(next http.Handler) http.Handler {
 		}
 	})
 }
-
-//------------------------------------------Workers------------------------------------------------//
-
-type Worker struct {
-	Id          int
-	Work        chan model.RecordingDetails
-	WorkerQueue chan chan model.RecordingDetails
-	QuitChan    chan bool
-}
-
-func NewWorker(id int, workerQueue chan chan model.RecordingDetails) Worker {
-	worker := Worker{
-		Id:          id,
-		Work:        make(chan model.RecordingDetails),
-		WorkerQueue: workerQueue,
-		QuitChan:    make(chan bool),
-	}
-	return worker
-}
-
-func (w *Worker) start() {
-	go func() {
-		for {
-			w.WorkerQueue <- w.Work
-			select {
-			case work := <-w.Work:
-				if err := db.UpdateRecording(work, "add"); err != nil {
-					log.Println(err)
-				}
-			case <-w.QuitChan:
-				fmt.Printf("Worker id:%d stopping\r\n", w.Id)
-				return
-			}
-		}
-	}()
-}
-
-func (w *Worker) stop() {
-	go func() {
-		w.QuitChan <- true
-	}()
-}
-
-func startDispatcher(nWorkers int) {
-	WorkerQueue = make(chan chan model.RecordingDetails, nWorkers)
-
-	for i := 0; i < nWorkers; i++ {
-		fmt.Println("Starting Worker", i+1)
-		worker := NewWorker(i+1, WorkerQueue)
-		worker.start()
-	}
-
-	go func() {
-		for {
-			select {
-			case work := <-WorkQueue:
-				go func() {
-					worker := <-WorkerQueue
-					worker <- work
-				}()
-			}
-		}
-	}()
-}
-
-//------------------------------------------Workers------------------------------------------------//
