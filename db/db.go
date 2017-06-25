@@ -106,7 +106,7 @@ func GetRecording(num, date1, date2, office string) (*[]model.RecordingDetails, 
 	case "'kiev":
 		sqlDatabase, err = sql.Open(server, db_kiev_URL)
 	default:
-		err = error("Choose Right Office")
+		err = errors.New("Choose Right Office")
 		return nil, err
 	}
 	if err != nil {
@@ -114,12 +114,14 @@ func GetRecording(num, date1, date2, office string) (*[]model.RecordingDetails, 
 	}
 	defer sqlDatabase.Close()
 
-	//query := "SELECT calldate,clid,src,dst,duration,billsec,disposition,cnam,recordingfile WHERE src LIKE ? OR dst LIKE ? AND disposition like 'ANSWERED' AND calldate BETWEEN ? AND ?"
-	query := "SELECT calldate,clid,src,dst,duration,billsec,disposition,cnam,recordingfile FROM cdr WHERE calldate BETWEEN ? AND ? AND disposition like 'ANSWERED' AND ( src LIKE ? OR dst LIKE ? )"
+	query := "SELECT calldate,clid,src,dst,duration,billsec,disposition,cnam,recordingfile,uniqueid FROM cdr WHERE calldate BETWEEN ? AND ? AND disposition like 'ANSWERED' AND  ( src LIKE ? OR dst LIKE ? )"
 	rows, err := sqlDatabase.Query(query, date1, date2, num, num)
+	c, _ := rows.Columns()
+	fmt.Println(c)
 	for rows.Next() {
 		var r model.RecordingDetails
 		err = rows.Scan(&r.CallDate, &r.ClId, &r.SRC, &r.DST, &r.Duration, &r.BillSec, &r.Disposition, &r.Cnam, &r.RecordingFile, &r.UniqueId)
+		fmt.Println(r)
 		r.Office = office
 		switch office {
 		case "germany":

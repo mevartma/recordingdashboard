@@ -9,7 +9,7 @@ import (
 	"html/template"
 	"io"
 	"io/ioutil"
-	"log"
+	_ "log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -275,7 +275,7 @@ func usersLogoutHandler(resp http.ResponseWriter, req *http.Request) {
 func loggerMid(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
 		req.Close = true
-		var clIP string
+		/*var clIP string
 		if req.Header.Get("X-Forwarded-For") == "" {
 			clIP = req.RemoteAddr
 		} else {
@@ -284,7 +284,7 @@ func loggerMid(next http.Handler) http.Handler {
 		realip := strings.Split(clIP, ":")
 		clIP = realip[0]
 		uAgent := req.Header.Get("User-Agent")
-		log.Printf("\"Method\": \"%s\", \"User-Agent\": \"%s\", \"URL\": \"%s\", \"Host\": \"[%s]\", \"Client-IP\": \"%v\"", req.Method, uAgent, req.URL, req.Host, clIP)
+		log.Printf("\"Method\": \"%s\", \"User-Agent\": \"%s\", \"URL\": \"%s\", \"Host\": \"[%s]\", \"Client-IP\": \"%v\"", req.Method, uAgent, req.URL, req.Host, clIP)*/
 		next.ServeHTTP(resp, req)
 	})
 }
